@@ -11,27 +11,9 @@ namespace LinkControl;
 
 use Helpers\Helper;
 
-abstract class Route
+class Route
 {
-
-    private $url;
     private $route;
-    private $result;
-
-    function __construct($url = null)
-    {
-        if ($url) {
-            $this->setUrl($url);
-        }
-    }
-
-    /**
-     * @param mixed $url
-     */
-    public function setUrl($url)
-    {
-        $this->url = $url;
-    }
 
     /**
      * @return mixed
@@ -41,18 +23,10 @@ abstract class Route
         return $this->route;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getResult()
+    public function checkRouteAjax($file)
     {
-        return $this->result;
-    }
-
-    public function checkRoute($file, $content = null)
-    {
-        foreach (Helper::listFolder(PATH_HOME . "vendor/conn/") as $folder) {
-            if($this->route = $this->checkDir(PATH_HOME . "vendor/conn/{$folder}/view/", $file, $content)) {
+        foreach (Helper::listFolder(PATH_HOME . "vendor/conn/") as $lib) {
+            if($this->route = $this->checkDir(PATH_HOME . "vendor/conn/{$lib}/ajax/", $file)) {
                 return true;
                 break;
             }
@@ -63,7 +37,21 @@ abstract class Route
 
     }
 
-    private function checkDir($folder, $file, $content = null)
+    protected function checkRoute($file, $content = null)
+    {
+        foreach (Helper::listFolder(PATH_HOME . "vendor/conn/") as $lib) {
+            if($this->route = $this->checkDir(PATH_HOME . "vendor/conn/{$lib}/view/", $file, $content)) {
+                return true;
+                break;
+            }
+        }
+
+        $this->route = PATH_HOME . "vendor/conn/link-control/view/404.php";
+        return false;
+
+    }
+
+    protected function checkDir($folder, $file, $content = null)
     {
         if (!empty($content) && file_exists($folder . $file . "/{$content}.php")) {
             return $folder . $file . "/{$content}.php";
