@@ -14,7 +14,6 @@ class Link extends Route {
 
     function __construct() {
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
-        parent::__construct();
         parent::checkRoute((!empty($this->url[0]) ? $this->url[0] : 'index'), $this->url[1] ?? null);
     }
 
