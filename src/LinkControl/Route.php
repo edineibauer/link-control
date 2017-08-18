@@ -14,6 +14,8 @@ use Helpers\Helper;
 class Route
 {
     private $route;
+    private $lib;
+    private $file;
 
     /**
      * @return mixed
@@ -21,6 +23,22 @@ class Route
     public function getRoute(): string
     {
         return $this->route;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLib()
+    {
+        return $this->lib;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFile()
+    {
+        return $this->file;
     }
 
     public function checkRouteAjax($file)
@@ -41,8 +59,8 @@ class Route
     {
         foreach (Helper::listFolder(PATH_HOME . "vendor/conn/") as $lib) {
             if($this->route = $this->checkDir(PATH_HOME . "vendor/conn/{$lib}/view/", $file, $content)) {
+                $this->lib = $lib;
                 return true;
-                break;
             }
         }
 
@@ -54,8 +72,10 @@ class Route
     protected function checkDir($folder, $file, $content = null)
     {
         if (!empty($content) && file_exists($folder . $file . "/{$content}.php")) {
+            $this->file = $content;
             return $folder . $file . "/{$content}.php";
         } elseif (file_exists($folder . $file . ".php")) {
+            $this->file = $file;
             return $folder . $file . ".php";
         }
 
