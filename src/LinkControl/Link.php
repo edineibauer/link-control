@@ -19,7 +19,7 @@ class Link extends Route
 
     function __construct()
     {
-        $this->param = array("title" => SITENAME);
+        $this->param = array("title" => SITENAME, "meta" => "", "css" => "", "js" => "", "font" => "");
         $this->library = ["angular", "materialize", "jquery"];
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
         parent::checkRoute($this->url[0] ?? 'index', $this->url[1] ?? null);

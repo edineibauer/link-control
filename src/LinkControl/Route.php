@@ -73,6 +73,8 @@ class Route
             }
         }
 
+        $this->file = "404";
+        $this->lib = "link-control";
         $this->route = PATH_HOME . "vendor/conn/link-control/view/404.php";
         return false;
 

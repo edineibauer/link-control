@@ -19,7 +19,7 @@ html {
 .error-page-wrap {
     width: 310px;
     height: 310px;
-    margin: 155px auto;
+    margin: 6% auto;
 }
 
 .error-page-wrap:before {
@@ -126,6 +126,7 @@ html {
 .error-page h2 {
     margin: 55px 0 30px 0;
     font-size: 17px;
+    color:#FFFFFF
 }
 
 .error-page h2:before {
@@ -165,7 +166,7 @@ html {
 
 .error-back {
     text-decoration: none;
-    color: #430400;
+    color: #FFF;
     font-size: 15px;
 }
 
