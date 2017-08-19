@@ -5,7 +5,7 @@ use \LinkControl\Route;
 if (Check::ajax()) {
 
     $lib = strip_tags(trim(filter_input(INPUT_POST, "lib", FILTER_DEFAULT)));
-    $url = strip_tags(trim(filter_input(INPUT_POST, "url", FILTER_DEFAULT)));
+    $url = strip_tags(trim(filter_input(INPUT_POST, "file", FILTER_DEFAULT)));
 
     if (!$lib) {
         $route = new Route();
@@ -18,5 +18,3 @@ if (Check::ajax()) {
     }
 
 }
-
-ob_end_flush();
