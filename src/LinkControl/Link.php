@@ -19,8 +19,8 @@ class Link extends Route
 
     function __construct()
     {
+        $this->library = "http://dev.buscaphone.com/library";
         $this->param = array("title" => SITENAME, "meta" => "", "css" => "", "js" => "", "font" => "");
-        $this->library = ["angular", "materialize", "jquery"];
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
         parent::checkRoute($this->url[0] ?? 'index', $this->url[1] ?? null);
         $this->checkParamPage();
@@ -57,23 +57,29 @@ class Link extends Route
     private function prepareDependencies($file)
     {
         $file = json_decode($file, true);
-        $file['js'] = $this->prepareJs($file['dependencies']['js'] ?? null);
-        $file['css'] = $this->prepareCss($file['dependencies']['css'] ?? null);
+
+        $file['js'] = $this->prepareJs(true, $file['libraries']['js'] ?? null);
+        $file['js'] .= $this->prepareJs(false, $file['dependencies']['js'] ?? null);
+
+        $file['css'] = $this->prepareCss(true, $file['libraries']['css'] ?? null);
+        $file['css'] .= $this->prepareCss(false, $file['dependencies']['css'] ?? null);
+
         $file['font'] = $this->prepareFont($file['dependencies']['font'] ?? null);
         $file['meta'] = $this->prepareMeta($file['dependencies']['meta'] ?? null);
 
-        unset($file['dependencies']);
+        unset($file['dependencies'], $file['libraries']);
 
         return $file;
     }
 
-    private function prepareJs($param = null)
+    private function prepareJs($lib, $param = null)
     {
-        $return = "<script src='" . HOME . "assets/system/js/boot.js" . "' defer ></script>\n";
+        $return = "";
 
         if ($param) {
             foreach ($param as $dependency) {
-                $js = $this->checkIfExist($this->checkLinks($dependency, 'js'), $dependency);
+                $js = $this->getLinkName($dependency, 'js', $lib);
+                $js = $this->checkIfExist($js, $dependency, 'js', $lib);
                 $return .= "<script src='{$js}' defer ></script>\n";
             }
         }
@@ -81,13 +87,14 @@ class Link extends Route
         return $return;
     }
 
-    private function prepareCss($param = null)
+    private function prepareCss($lib, $param = null)
     {
         $return = "";
 
         if ($param) {
             foreach ($param as $dependency) {
-                $css = $this->checkIfExist($this->checkLinks($dependency, 'css'), $dependency);
+                $css = $this->getLinkName($dependency, 'css', $lib);
+                $css = $this->checkIfExist($css, $dependency, 'css', $lib);
                 $return .= "<link rel='stylesheet' href='{$css}'>\n";
             }
         }
@@ -119,22 +126,16 @@ class Link extends Route
         return $return;
     }
 
-    private function checkLinks($js, $type) {
-        return "assets/" . (in_array($js, $this->library) ? "{$js}/{$type}/{$js}.min" : "my/{$type}/" . $js) . ".{$type}";
+    private function getLinkName($dependency, $type, $lib) {
+        return "assets/" . ($lib ? "{$dependency}/{$type}/{$dependency}.min" : "{$type}/" . $dependency) . ".{$type}";
     }
 
-    private function checkIfExist($file, $dependency)
+    private function checkIfExist($file, $dependency, $type, $lib)
     {
-        if(in_array($dependency, $this->library)) {
+        if($lib) {
             if(!file_exists(PATH_HOME . $file)) {
-                $link = PATH_HOME;
-                foreach (explode('/', $file) as $i => $peca) {
-                    if (!preg_match('/\./', $peca)) {
-                        $link .= ($i > 0 ? "/" : "") . $peca;
-                        Helper::createFolderIfNoExist($link);
-                    }
-                }
-                copy(PATH_HOME . "vendor/conn/" . parent::getLib() . "/" . $file, PATH_HOME . $file);
+                $this->createFolderAssetsLibraries($file);
+                copy("{$this->library}/{$type}/{$dependency}.min.{$type}", PATH_HOME . $file);
             }
 
             return HOME . $file;
@@ -142,6 +143,18 @@ class Link extends Route
         } else {
 
             return HOME . "vendor/conn/" . parent::getLib() . "/" . $file;
+        }
+    }
+
+    private function createFolderAssetsLibraries($file)
+    {
+        $link = PATH_HOME;
+        $split = explode('/', $file);
+        foreach ($split as $i => $peca) {
+            if ($i < count($split) - 1) {
+                $link .= ($i > 0 ? "/" : "") . $peca;
+                Helper::createFolderIfNoExist($link);
+            }
         }
     }
 }
