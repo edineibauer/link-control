@@ -22,7 +22,7 @@ class Link extends Route
         $this->param = array("title" => SITENAME);
         $this->library = ["angular", "materialize", "jquery"];
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
-        parent::checkRoute((!empty($this->url[0]) ? $this->url[0] : 'index'), $this->url[1] ?? null);
+        parent::checkRoute($this->url[0] ?? 'index', $this->url[1] ?? null);
         $this->checkParamPage();
     }
 

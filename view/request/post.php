@@ -1,7 +1,4 @@
 <?php
-ob_start();
-require_once PATH_HOME . "_config/config.php";
-
 use \Helpers\Check;
 use \LinkControl\Route;
 

@@ -1,0 +1,6 @@
+{
+  "title": "404 Página não Encontrada",
+  "dependencies": {
+    "css": ["404"]
+  }
+}

@@ -41,12 +41,21 @@ class Route
         return $this->file;
     }
 
-    public function checkRouteAjax($file)
+    public function checkRouteAjax($file, $lib = null)
     {
-        foreach (Helper::listFolder(PATH_HOME . "vendor/conn/") as $lib) {
-            if($this->route = $this->checkDir(PATH_HOME . "vendor/conn/{$lib}/ajax/", $file)) {
+        if($lib) {
+            if (file_exists(PATH_HOME . "vendor/conn/{$lib}/ajax/{$file}.php")) {
+                $this->file = $file;
+                $this->route = PATH_HOME . "vendor/conn/{$lib}/ajax/{$file}.php";
                 return true;
-                break;
+            }
+        } else {
+            foreach (Helper::listFolder(PATH_HOME . "vendor/conn/") as $libr) {
+                if (file_exists(PATH_HOME . "vendor/conn/{$libr}/ajax/{$file}.php")) {
+                    $this->file = $file;
+                    $this->route = PATH_HOME . "vendor/conn/{$lib}/ajax/{$file}.php";
+                    return true;
+                }
             }
         }
 
