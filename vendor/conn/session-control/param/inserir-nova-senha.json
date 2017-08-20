@@ -1,0 +1,28 @@
+{
+  "title": "Digite sua Nova senha",
+  "subtitle": "restauração da senha",
+  "type": "page",
+  "libraries": {
+    "js": [
+      "jquery",
+      "materialize",
+      "nena-boot"
+    ],
+    "css": [
+      "materialize",
+      "nena-font",
+      "nena-helper"
+    ],
+    "font": [
+      "roboto"
+    ]
+  },
+  "dependencies": {
+    "js": [
+      "login"
+    ],
+    "css": [
+      "login"
+    ]
+  }
+}
