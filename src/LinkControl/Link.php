@@ -22,7 +22,7 @@ class Link extends Route
         $this->library = "http://dev.buscaphone.com/library";
         $this->param = array("title" => SITENAME, "meta" => "", "css" => "", "js" => "", "font" => "");
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
-        parent::checkRoute($this->url[0] ?? 'index', $this->url[1] ?? null);
+        parent::checkRoute((isset($this->url[0]) && !empty($this->url[0]) ? $this->url[0] : 'index'), $this->url[1] ?? null);
         $this->checkParamPage();
     }
 
