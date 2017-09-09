@@ -64,7 +64,8 @@ class Link extends Route
         $file['css'] = $this->prepareCss(true, $file['libraries']['css'] ?? null);
         $file['css'] .= $this->prepareCss(false, $file['dependencies']['css'] ?? null);
 
-        $file['font'] = $this->prepareFont($file['dependencies']['font'] ?? null);
+        $file['font'] = $this->prepareIcon($file['libraries']['icon'] ?? null);
+        $file['font'] .= $this->prepareFont($file['dependencies']['font'] ?? null);
         $file['meta'] = $this->prepareMeta($file['dependencies']['meta'] ?? null);
 
         unset($file['dependencies'], $file['libraries']);
@@ -102,12 +103,35 @@ class Link extends Route
         return $return;
     }
 
+    private function prepareIcon($param = null)
+    {
+        $return = "";
+
+        if ($param) {
+            foreach ($param as $item) {
+                switch ($item) {
+                    case 'materialize':
+                        $item = 'https://fonts.googleapis.com/icon?family=Material+Icons';
+                        break;
+                    case 'material':
+                        $item = 'https://fonts.googleapis.com/icon?family=Material+Icons';
+                        break;
+                }
+                $return .= "<link rel='stylesheet' href='{$item}' type='text/css' media='all'/>";
+            }
+        }
+
+        return $return;
+    }
+
     private function prepareFont($param = null)
     {
         $return = "";
 
         if ($param) {
-            $this->param['font'] = "<link rel='stylesheet' href='" . implode("' type='text/css' media='all'/>\n<link rel='stylesheet' href='", $this->param['dependencies']['font']) . "' type='text/css' media='all'/>";
+            foreach ($param as $item) {
+                $return .= "<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=" . ucfirst($item) . ":100,300,400,700' type='text/css' media='all'/>";
+            }
         }
 
         return $return;
@@ -119,7 +143,7 @@ class Link extends Route
 
         if ($param) {
             foreach ($param as $dependency) {
-                $this->param['meta'] .= "<meta " . (isset($dependency['name']) ? "name='{$dependency['name']}' " : "") . (isset($dependency['property']) ? "property='{$dependency['property']}' " : "") . "content='{$dependency['content']}'>";
+                $return .= "<meta " . (isset($dependency['name']) ? "name='{$dependency['name']}' " : "") . (isset($dependency['property']) ? "property='{$dependency['property']}' " : "") . "content='{$dependency['content']}'>";
             }
         }
 
