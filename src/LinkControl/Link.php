@@ -65,7 +65,7 @@ class Link extends Route
         $file['css'] .= $this->prepareCss(false, $file['dependencies']['css'] ?? null);
 
         $file['font'] = $this->prepareIcon($file['libraries']['icon'] ?? null);
-        $file['font'] .= $this->prepareFont($file['dependencies']['font'] ?? null);
+        $file['font'] .= $this->prepareFont($file['libraries']['font'] ?? null);
         $file['meta'] = $this->prepareMeta($file['dependencies']['meta'] ?? null);
 
         unset($file['dependencies'], $file['libraries']);
