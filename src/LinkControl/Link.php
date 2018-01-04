@@ -20,9 +20,9 @@ class Link extends Route
     function __construct()
     {
         $this->library = "http://dev.buscaphone.com/library";
-        $this->param = array("title" => SITENAME, "meta" => "", "css" => "", "js" => "", "font" => "");
+        $this->param = ["title" => SITENAME, "meta" => "", "css" => "", "js" => "", "font" => ""];
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
-        parent::checkRoute((isset($this->url[0]) && !empty($this->url[0]) ? $this->url[0] : 'index'), $this->url[1] ?? null);
+        parent::checkRoute(!empty($this->url[0] ? $this->url[0] : 'index'), $this->url[1] ?? null);
         $this->checkParamPage();
     }
 
@@ -46,94 +46,52 @@ class Link extends Route
     {
         if (parent::getLib()) {
             if (file_exists(PATH_HOME . "vendor/conn/" . parent::getLib() . "/param/" . parent::getFile() . ".json")) {
-                $file = file_get_contents(PATH_HOME . "vendor/conn/" . parent::getLib() . "/param/" . parent::getFile() . ".json");
-                if (strlen($file) > 5) {
-                    $this->param =  $this->prepareDependencies($file);
-                }
+                $file = json_decode(file_get_contents(PATH_HOME . "vendor/conn/" . parent::getLib() . "/param/" . parent::getFile() . ".json"), true);
+                if (!empty($file))
+                    $this->param = $this->prepareDependencies($file);
             }
         }
     }
 
     private function prepareDependencies($file)
     {
-        $file = json_decode($file, true);
+        $file['js'] = !empty($file['libraries']['js']) ? $this->prepareDependency($file['libraries']['js'], 'js') : null;
+        $file['css'] = !empty($file['libraries']['css']) ? $this->prepareDependency($file['libraries']['css'], 'css') : null;
+        $file['font'] = (!empty($file['libraries']['icon']) ? $this->prepareIcon($file['libraries']['icon']) : "") . (!empty($file['libraries']['font']) ? $this->prepareFont($file['libraries']['font']) : null);
+        $file['meta'] = $this->prepareMeta($file['meta'] ?? null);
 
-        $file['js'] = $this->prepareJs(true, $file['libraries']['js'] ?? null);
-        $file['js'] .= $this->prepareJs(false, $file['dependencies']['js'] ?? null);
-
-        $file['css'] = $this->prepareCss(true, $file['libraries']['css'] ?? null);
-        $file['css'] .= $this->prepareCss(false, $file['dependencies']['css'] ?? null);
-
-        $file['font'] = $this->prepareIcon($file['libraries']['icon'] ?? null);
-        $file['font'] .= $this->prepareFont($file['libraries']['font'] ?? null);
-        $file['meta'] = $this->prepareMeta($file['dependencies']['meta'] ?? null);
+        $file['js'] .= $this->getLinkDependency(parent::getFile(), 'js');
+        $file['css'] .= $this->getLinkDependency(parent::getFile(), 'css');
 
         unset($file['dependencies'], $file['libraries']);
 
         return $file;
     }
 
-    private function prepareJs($lib, $param = null)
+    private function prepareDependency(array $param, string $extensao): string
     {
         $return = "";
-
-        if ($param) {
-            foreach ($param as $dependency) {
-                $js = $this->getLinkName($dependency, 'js', $lib);
-                $js = $this->checkIfExist($js, $dependency, 'js', $lib);
-                $return .= "<script src='{$js}' defer ></script>\n";
-            }
+        foreach ($param as $dependency) {
+            $return .= $this->getLinkDependency($dependency, $extensao);
         }
-
         return $return;
     }
 
-    private function prepareCss($lib, $param = null)
+    private function prepareIcon(array $param): string
     {
         $return = "";
-
-        if ($param) {
-            foreach ($param as $dependency) {
-                $css = $this->getLinkName($dependency, 'css', $lib);
-                $css = $this->checkIfExist($css, $dependency, 'css', $lib);
-                $return .= "<link rel='stylesheet' href='{$css}'>\n";
-            }
+        foreach ($param as $item) {
+            $return .= "<link rel='stylesheet' href='https://fonts.googleapis.com/icon?family=" . ucfirst($item) . "+Icons' type='text/css' media='all'/>";
         }
-
         return $return;
     }
 
-    private function prepareIcon($param = null)
+    private function prepareFont(array $param): string
     {
         $return = "";
-
-        if ($param) {
-            foreach ($param as $item) {
-                switch ($item) {
-                    case 'materialize':
-                        $item = 'https://fonts.googleapis.com/icon?family=Material+Icons';
-                        break;
-                    case 'material':
-                        $item = 'https://fonts.googleapis.com/icon?family=Material+Icons';
-                        break;
-                }
-                $return .= "<link rel='stylesheet' href='{$item}' type='text/css' media='all'/>";
-            }
+        foreach ($param as $item) {
+            $return .= "<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=" . ucfirst($item) . ":100,300,400,700' type='text/css' media='all'/>";
         }
-
-        return $return;
-    }
-
-    private function prepareFont($param = null)
-    {
-        $return = "";
-
-        if ($param) {
-            foreach ($param as $item) {
-                $return .= "<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=" . ucfirst($item) . ":100,300,400,700' type='text/css' media='all'/>";
-            }
-        }
-
         return $return;
     }
 
@@ -150,24 +108,15 @@ class Link extends Route
         return $return;
     }
 
-    private function getLinkName($dependency, $type, $lib) {
-        return "assets/" . ($lib ? "{$dependency}/{$type}/{$dependency}.min" : "{$type}/" . $dependency) . ".{$type}";
-    }
-
-    private function checkIfExist($file, $dependency, $type, $lib)
+    private function getLinkDependency($library, $extensao)
     {
-        if($lib) {
-            if(!file_exists(PATH_HOME . $file)) {
-                $this->createFolderAssetsLibraries($file);
-                copy("{$this->library}/{$type}/{$dependency}.min.{$type}", PATH_HOME . $file);
-            }
-
-            return HOME . $file;
-
-        } else {
-
-            return HOME . "vendor/conn/" . parent::getLib() . "/" . $file;
+        $file = PATH_HOME . "assets/{$library}/{$library}.min.{$extensao}";
+        if (!file_exists($file)) {
+            $this->createFolderAssetsLibraries("assets/{$library}/{$library}.min.{$extensao}");
+            copy("{$this->library}/assets/{$library}/{$library}.min.{$extensao}", $file);
         }
+
+        return $extensao === "js" ? "<script src='{$file}' defer ></script>\n" : "<link rel='stylesheet' href='{$file}'>\n";
     }
 
     private function createFolderAssetsLibraries($file)

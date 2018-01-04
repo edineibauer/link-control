@@ -66,18 +66,19 @@ class Route
 
     protected function checkRoute($file, $content = null)
     {
-        foreach (Helper::listFolder(PATH_HOME . "vendor/conn/") as $lib) {
-            if($this->route = $this->checkDir(PATH_HOME . "vendor/conn/{$lib}/view/", $file, $content)) {
-                $this->lib = $lib;
+        if(!file_exists(PATH_HOME . "_config/route.json"))
+            copy(PATH_HOME . "vendor/conn/link-control/param/routes.json", PATH_HOME . "_config/route.json");
+
+        $routes = json_decode(file_get_contents(PATH_HOME . "_config/route.json"), true);
+
+        foreach ($routes as $this->lib) {
+            if($this->route = $this->checkDir(PATH_HOME . "vendor/conn/{$this->lib}/view/", $file, $content))
                 return true;
-            }
         }
 
         $this->file = "404";
         $this->lib = "link-control";
         $this->route = PATH_HOME . "vendor/conn/link-control/view/404.php";
-        return false;
-
     }
 
     protected function checkDir($folder, $file, $content = null)
