@@ -19,7 +19,7 @@ class Link extends Route
 
     function __construct()
     {
-        $this->library = "http://dev.buscaphone.com/library";
+        $this->library = "http://dev.ontab.com.br";
         $this->param = ["title" => SITENAME, "meta" => "", "css" => "", "js" => "", "font" => ""];
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
         parent::checkRoute(!empty($this->url[0] ? $this->url[0] : 'index'), $this->url[1] ?? null);
@@ -55,15 +55,13 @@ class Link extends Route
 
     private function prepareDependencies($file)
     {
-        $file['js'] = !empty($file['libraries']['js']) ? $this->prepareDependency($file['libraries']['js'], 'js') : null;
-        $file['css'] = !empty($file['libraries']['css']) ? $this->prepareDependency($file['libraries']['css'], 'css') : null;
-        $file['font'] = (!empty($file['libraries']['icon']) ? $this->prepareIcon($file['libraries']['icon']) : "") . (!empty($file['libraries']['font']) ? $this->prepareFont($file['libraries']['font']) : null);
+        $file['js'] = !empty($file['js']) ? $this->prepareDependency($file['js'], 'js') : null;
+        $file['css'] = !empty($file['css']) ? $this->prepareDependency($file['css'], 'css') : null;
+        $file['font'] = (!empty($file['icon']) ? $this->prepareIcon($file['icon']) : "") . (!empty($file['font']) ? $this->prepareFont($file['font']) : null);
         $file['meta'] = $this->prepareMeta($file['meta'] ?? null);
 
         $file['js'] .= $this->getLinkDependency(parent::getFile(), 'js');
         $file['css'] .= $this->getLinkDependency(parent::getFile(), 'css');
-
-        unset($file['dependencies'], $file['libraries']);
 
         return $file;
     }
