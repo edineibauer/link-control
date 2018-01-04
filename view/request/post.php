@@ -14,7 +14,11 @@ if (Check::ajax()) {
 
     } else {
 
+        $data = ["response" => 1, "error" => "", "data" => ""];
+
         include_once PATH_HOME . "vendor/conn/{$lib}/ajax/{$url}.php";
+
+        echo json_encode($data);
     }
 
 }
