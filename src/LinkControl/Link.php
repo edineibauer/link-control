@@ -22,7 +22,7 @@ class Link extends Route
         $this->library = "http://dev.ontab.com.br";
         $this->param = ["title" => SITENAME, "meta" => "", "css" => "", "js" => "", "font" => ""];
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
-        parent::checkRoute(!empty($this->url[0] ? $this->url[0] : 'index'), $this->url[1] ?? null);
+        parent::checkRoute(!empty($this->url[0]) ? $this->url[0] : 'index', $this->url[1] ?? null);
         $this->checkParamPage();
     }
 
@@ -56,12 +56,13 @@ class Link extends Route
     private function prepareDependencies($file)
     {
         $file['js'] = !empty($file['js']) ? $this->prepareDependency($file['js'], 'js') : null;
-        $file['css'] = !empty($file['css']) ? $this->prepareDependency($file['css'], 'css') : null;
+        $file['css'] = !empty($file['css']) ? $this->prepareDependency($file['css'], 'css') : $this->getLinkDependency("w3", "css");
         $file['font'] = (!empty($file['icon']) ? $this->prepareIcon($file['icon']) : "") . (!empty($file['font']) ? $this->prepareFont($file['font']) : null);
         $file['meta'] = $this->prepareMeta($file['meta'] ?? null);
 
-        $file['js'] .= $this->getLinkDependency(parent::getFile(), 'js');
-        $file['css'] .= $this->getLinkDependency(parent::getFile(), 'css');
+        $file['js'] .= $this->getLinkDependency("boot", "js");
+        $file['js'] .= "<script src='" . HOME . "vendor/conn/" . parent::getLib() . "/assets/" . parent::getFile() . ".min.js' defer ></script>\n";
+        $file['css'] .= "<link rel='stylesheet' href='" . HOME . "vendor/conn/" . parent::getLib() . "/assets/" . parent::getFile() . ".min.css'>\n";
 
         return $file;
     }
@@ -108,13 +109,13 @@ class Link extends Route
 
     private function getLinkDependency($library, $extensao)
     {
-        $file = PATH_HOME . "assets/{$library}/{$library}.min.{$extensao}";
+        $file = "assets/{$library}/{$library}.min.{$extensao}";
         if (!file_exists($file)) {
-            $this->createFolderAssetsLibraries("assets/{$library}/{$library}.min.{$extensao}");
-            copy("{$this->library}/assets/{$library}/{$library}.min.{$extensao}", $file);
+            $this->createFolderAssetsLibraries($file);
+            copy("{$this->library}/{$library}/{$library}.min.{$extensao}", PATH_HOME . $file);
         }
 
-        return $extensao === "js" ? "<script src='{$file}' defer ></script>\n" : "<link rel='stylesheet' href='{$file}'>\n";
+        return $extensao === "js" ? "<script src='" . HOME . $file . "' defer ></script>\n" : "<link rel='stylesheet' href='" . HOME . $file . "'>\n";
     }
 
     private function createFolderAssetsLibraries($file)
