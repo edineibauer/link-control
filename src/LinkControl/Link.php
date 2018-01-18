@@ -45,8 +45,9 @@ class Link extends Route
     private function checkParamPage()
     {
         if (parent::getLib()) {
-            if (file_exists(PATH_HOME . "vendor/conn/" . parent::getLib() . "/param/" . parent::getFile() . ".json")) {
-                $file = json_decode(file_get_contents(PATH_HOME . "vendor/conn/" . parent::getLib() . "/param/" . parent::getFile() . ".json"), true);
+            $path = PATH_HOME . (!DEV || parent::getLib() !== DOMINIO ? "vendor/conn/" . parent::getLib() . "/" : "") . "param/" . parent::getFile() . ".json";
+            if (file_exists($path)) {
+                $file = json_decode(file_get_contents($path), true);
                 if (!empty($file))
                     $this->param = $this->prepareDependencies($file);
             }
@@ -61,8 +62,8 @@ class Link extends Route
         $file['meta'] = $this->prepareMeta($file['meta'] ?? null);
 
         $file['js'] .= $this->getLinkDependency("boot", "js");
-        $file['js'] .= "<script src='" . HOME . "vendor/conn/" . parent::getLib() . "/assets/" . parent::getFile() . ".min.js' defer ></script>\n";
-        $file['css'] .= "<link rel='stylesheet' href='" . HOME . "vendor/conn/" . parent::getLib() . "/assets/" . parent::getFile() . ".min.css'>\n";
+        $file['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js' defer ></script>\n";
+        $file['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".css'>\n";
 
         return $file;
     }
@@ -109,10 +110,10 @@ class Link extends Route
 
     private function getLinkDependency($library, $extensao)
     {
-        $file = "assets/{$library}/{$library}.min.{$extensao}";
+        $file = $this->getAssets() . "/{$library}/{$library}" . $this->getMinify() . ".{$extensao}";
         if (!file_exists($file)) {
             $this->createFolderAssetsLibraries($file);
-            copy("{$this->library}/{$library}/{$library}.min.{$extensao}", PATH_HOME . $file);
+            copy("{$this->library}/{$library}/{$library}" . $this->getMinify() . ".{$extensao}", PATH_HOME . $file);
         }
 
         return $extensao === "js" ? "<script src='" . HOME . $file . "' defer ></script>\n" : "<link rel='stylesheet' href='" . HOME . $file . "'>\n";
@@ -128,5 +129,24 @@ class Link extends Route
                 Helper::createFolderIfNoExist($link);
             }
         }
+    }
+
+    /**
+     * Retorna .min para PRODUÇÃO ou vazio para DESENVOLVIMENTO
+     *
+     * @return string
+     */
+    private function getMinify() :string {
+        return !DEV ? ".min" : "";
+    }
+
+    /**
+     * Retorna o Assets para produçao ou Desenvolvimento
+     *
+     * @return string
+    */
+    private function getAssets() :string
+    {
+        return DEV ? "assetsPublic" : "assets";
     }
 }

@@ -14,6 +14,7 @@ use Helpers\Helper;
 class Route
 {
     private $route;
+    private $routes;
     private $lib;
     private $file;
 
@@ -43,54 +44,88 @@ class Route
 
     public function checkRouteAjax($file, $lib = null)
     {
-        if($lib) {
-            if (file_exists(PATH_HOME . "vendor/conn/{$lib}/ajax/{$file}.php")) {
-                $this->file = $file;
-                $this->route = PATH_HOME . "vendor/conn/{$lib}/ajax/{$file}.php";
-                return true;
-            }
-        } else {
-            foreach (Helper::listFolder(PATH_HOME . "vendor/conn/") as $libr) {
-                if (file_exists(PATH_HOME . "vendor/conn/{$libr}/ajax/{$file}.php")) {
-                    $this->file = $file;
-                    $this->route = PATH_HOME . "vendor/conn/{$lib}/ajax/{$file}.php";
-                    return true;
-                }
+        $this->file = $file;
+
+        if ($lib && (!DEV || (DEV && $lib !== DOMINIO)))
+            $this->libPatch($lib);
+        elseif (DEV)
+            $this->route = PATH_HOME . "ajax/{$this->file}.php";
+        else
+            $this->searchRouteAjax($lib);
+
+        if (!$this->route)
+            $this->route = PATH_HOME . "vendor/conn/link-control/view/404.php";
+    }
+
+    /**
+     * @param string $lib
+     */
+    private function libPatch(string $lib)
+    {
+        if (file_exists(PATH_HOME . "vendor/conn/{$lib}/ajax/{$this->file}.php"))
+            $this->route = PATH_HOME . "vendor/conn/{$lib}/ajax/{$this->file}.php";
+    }
+
+    /**
+     * @param string $lib
+     */
+    private function searchRouteAjax(string $lib)
+    {
+        foreach (json_decode(file_get_contents(PATH_HOME . "_config/route.json"), true) as $libr) {
+            if (file_exists(PATH_HOME . "vendor/conn/{$libr}/ajax/{$this->file}.php")) {
+                $this->route = PATH_HOME . "vendor/conn/{$lib}/ajax/{$this->file}.php";
+                break;
             }
         }
-
-        $this->route = PATH_HOME . "vendor/conn/link-control/view/404.php";
-        return false;
-
     }
 
     protected function checkRoute($file, $content = null)
     {
-        if(!file_exists(PATH_HOME . "_config/route.json"))
-            copy(PATH_HOME . "vendor/conn/link-control/param/routes.json", PATH_HOME . "_config/route.json");
+        $this->routes = $this->getRouteFile();
 
-        $routes = json_decode(file_get_contents(PATH_HOME . "_config/route.json"), true);
-
-        foreach ($routes as $this->lib) {
-            if($this->route = $this->checkDir(PATH_HOME . "vendor/conn/{$this->lib}/view/", $file, $content))
+        foreach ($this->routes as $this->lib) {
+            if ($this->route = $this->checkViewFile($file, $content))
                 return true;
         }
 
+        $this->show404();
+    }
+
+    /**
+     * Retorna o link de acesso para DESENVOLVIMENTO ou PRODUÇÃO
+     *
+     * @return string
+    */
+    protected function getDir() :string {
+        return !DEV || $this->lib !== DOMINIO ? "vendor/conn/{$this->lib}/" : "";
+    }
+
+    private function checkViewFile($file, $content = null)
+    {
+        $this->file = $content ?? $file;
+        $path = PATH_HOME . $this->getDir() . "view/" . ($content ? $file . "/" : "") . $this->file . ".php";
+
+        if (file_exists($path))
+            return $path;
+
+        return null;
+    }
+
+    private function show404()
+    {
         $this->file = "404";
         $this->lib = "link-control";
         $this->route = PATH_HOME . "vendor/conn/link-control/view/404.php";
     }
 
-    protected function checkDir($folder, $file, $content = null)
+    /**
+     * @return array
+    */
+    private function getRouteFile()
     {
-        if (!empty($content) && file_exists($folder . $file . "/{$content}.php")) {
-            $this->file = $content;
-            return $folder . $file . "/{$content}.php";
-        } elseif (file_exists($folder . $file . ".php")) {
-            $this->file = $file;
-            return $folder . $file . ".php";
-        }
+        if (!file_exists(PATH_HOME . "_config/route.json"))
+            copy(PATH_HOME . "vendor/conn/link-control/param/routes.json", PATH_HOME . "_config/route.json");
 
-        return null;
+        return json_decode(file_get_contents(PATH_HOME . "_config/route.json"), true);
     }
 }
