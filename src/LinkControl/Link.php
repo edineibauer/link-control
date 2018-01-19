@@ -110,10 +110,10 @@ class Link extends Route
 
     private function getLinkDependency($library, $extensao)
     {
-        $file = $this->getAssets() . "/{$library}/{$library}" . $this->getMinify() . ".{$extensao}";
+        $file = $this->getAssets() . "/{$library}/{$library}" . $this->getMinify($library) . ".{$extensao}";
         if (!file_exists($file)) {
             $this->createFolderAssetsLibraries($file);
-            copy("{$this->library}/{$library}/{$library}" . $this->getMinify() . ".{$extensao}", PATH_HOME . $file);
+            copy("{$this->library}/{$library}/{$library}" . $this->getMinify($library) . ".{$extensao}", PATH_HOME . $file);
         }
 
         return $extensao === "js" ? "<script src='" . HOME . $file . "' defer ></script>\n" : "<link rel='stylesheet' href='" . HOME . $file . "'>\n";
@@ -136,8 +136,8 @@ class Link extends Route
      *
      * @return string
      */
-    private function getMinify() :string {
-        return !DEV ? ".min" : "";
+    private function getMinify($library = null) :string {
+        return !DEV || in_array($library, ["angular", "jquery", "materialize", "bootstrap"]) ? ".min" : "";
     }
 
     /**
