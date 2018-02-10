@@ -11,6 +11,9 @@ class Sessao
 
     public function __construct()
     {
+        if(!session_start())
+            session_start();
+
         $this->checkSession();
     }
 
