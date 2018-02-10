@@ -24,6 +24,7 @@ class Link extends Route
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
         parent::checkRoute(!empty($this->url[0]) ? $this->url[0] : 'index', $this->url[1] ?? null);
         $this->checkParamPage();
+        new EntityImport(parent::getLib());
         new Sessao();
     }
 
