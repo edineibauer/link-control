@@ -54,7 +54,7 @@ class Route
             $this->searchRouteAjax($lib);
 
         if (!$this->route)
-            $this->route = PATH_HOME . "vendor/conn/link-control/view/404.php";
+            $this->show404();
     }
 
     /**
@@ -115,7 +115,7 @@ class Route
     {
         $this->file = "404";
         $this->lib = "link-control";
-        $this->route = PATH_HOME . "vendor/conn/link-control/view/404.php";
+        $this->route = PATH_HOME . (DEV && DOMINIO === "link-control" ? "" : "vendor/conn/link-control/") . "view/404.php";
     }
 
     /**
