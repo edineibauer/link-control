@@ -29,6 +29,8 @@ class Sessao
             $this->checkCookieInfo();
         else
             $this->logged = true;
+
+        define("LOGGED", $this->logged);
     }
 
     /**
