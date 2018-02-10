@@ -123,9 +123,6 @@ class Route
     */
     private function getRouteFile()
     {
-        if (!file_exists(PATH_HOME . "_config/route.json"))
-            copy(PATH_HOME . "vendor/conn/link-control/param/routes.json", PATH_HOME . "_config/route.json");
-
         return json_decode(file_get_contents(PATH_HOME . "_config/route.json"), true);
     }
 }

@@ -24,6 +24,7 @@ class Link extends Route
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
         parent::checkRoute(!empty($this->url[0]) ? $this->url[0] : 'index', $this->url[1] ?? null);
         $this->checkParamPage();
+        new Sessao();
     }
 
     /**
@@ -44,28 +45,32 @@ class Link extends Route
 
     private function checkParamPage()
     {
+        $this->prepareDependencies(PATH_HOME . "_config/param.json");
+
         if (parent::getLib()) {
             $path = PATH_HOME . (!DEV || parent::getLib() !== DOMINIO ? "vendor/conn/" . parent::getLib() . "/" : "") . "param/" . parent::getFile() . ".json";
-            if (file_exists($path)) {
-                $file = json_decode(file_get_contents($path), true);
-                if (!empty($file))
-                    $this->param = $this->prepareDependencies($file);
-            }
+            if (file_exists($path))
+                $this->prepareDependencies($path);
         }
+
+        if(file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js"))
+            $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js' defer ></script>\n";
+
+        if(file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".css"))
+            $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".css'>\n";
     }
 
-    private function prepareDependencies($file)
+    /**
+     * @param string $file
+    */
+    private function prepareDependencies(string $file)
     {
-        $file['js'] = !empty($file['js']) ? $this->prepareDependency($file['js'], 'js') : null;
-        $file['css'] = !empty($file['css']) ? $this->prepareDependency($file['css'], 'css') : $this->getLinkDependency("w3", "css");
-        $file['font'] = (!empty($file['icon']) ? $this->prepareIcon($file['icon']) : "") . (!empty($file['font']) ? $this->prepareFont($file['font']) : null);
-        $file['meta'] = $this->prepareMeta($file['meta'] ?? null);
+        $file = json_decode(file_get_contents($file), true);
 
-        $file['js'] .= $this->getLinkDependency("boot", "js");
-        $file['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js' defer ></script>\n";
-        $file['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".css'>\n";
-
-        return $file;
+        $this->param['js'] .= !empty($file['js']) ? $this->prepareDependency($file['js'], 'js') : null;
+        $this->param['css'] .= !empty($file['css']) ? $this->prepareDependency($file['css'], 'css') : $this->getLinkDependency("w3", "css");
+        $this->param['font'] .= (!empty($file['icon']) ? $this->prepareIcon($file['icon']) : "") . (!empty($file['font']) ? $this->prepareFont($file['font']) : null);
+        $this->param['meta'] .= $this->prepareMeta($file['meta'] ?? null);
     }
 
     private function prepareDependency(array $param, string $extensao): string
