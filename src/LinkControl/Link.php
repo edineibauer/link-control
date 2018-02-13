@@ -56,9 +56,14 @@ class Link extends Route
 
         if(file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js"))
             $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js' defer ></script>\n";
+        elseif(file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".js"))
+            $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".js' defer ></script>\n";
 
         if(file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".css"))
             $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".css'>\n";
+        elseif(file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".css"))
+            $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".css'>\n";
+
     }
 
     /**
