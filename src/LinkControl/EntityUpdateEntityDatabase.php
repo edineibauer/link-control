@@ -94,10 +94,10 @@ class EntityUpdateEntityDatabase extends EntityDatabase
     {
         $dados = $this->old[$id];
         $sql = new SqlCommand();
-        if ($dados['key'] === "list" || $dados['key'] === "extend") {
+        if ($dados['key'] === "list" || $dados['key'] === "extend" || $dados['key'] === "selecao") {
             $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " DROP FOREIGN KEY " . PRE . $dados['column'] . "_" . $this->entity . ", DROP INDEX fk_" . $dados['column']);
 
-        } elseif ($dados['key'] === "list_mult" || $dados['key'] === "extend_mult") {
+        } elseif ($dados['key'] === "list_mult" || $dados['key'] === "extend_mult" || $dados['key'] === "selecao_mult") {
             $sql->exeCommand("DROP TABLE " . PRE . $this->entity . "_" . $dados['relation']);
 
         } else {
@@ -122,13 +122,13 @@ class EntityUpdateEntityDatabase extends EntityDatabase
             $sql = new SqlCommand();
             foreach ($add as $id) {
                 $dados = $this->new[$id];
-                if (in_array($this->new[$id]['key'], ["list_mult", "extend_mult"])) {
+                if (in_array($this->new[$id]['key'], ["list_mult", "extend_mult", "selecao_mult"])) {
                     parent::createRelationalTable($id, $dados);
 
                 } else {
                     $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " ADD " . parent::prepareSqlColumn($this->new[$id]));
 
-                    if (in_array($dados['key'], array('extend', 'list')))
+                    if (in_array($dados['key'], array('extend', 'list', "selecao")))
                         parent::createIndexFk($id, $this->entity, $dados['column'], $dados['relation'], $dados['key']);
                 }
             }

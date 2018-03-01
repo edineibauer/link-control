@@ -27,12 +27,12 @@ class EntityCreateEntityDatabase extends EntityDatabase
 
     /**
      * @param string $entity
-    */
+     */
     private function prepareCommandToCreateTable(string $entity, array $data)
     {
         $string = "CREATE TABLE IF NOT EXISTS `" . PRE . $entity . "` (`id` INT(11) NOT NULL";
         foreach ($data as $i => $dados) {
-            if (!in_array($dados['key'], ["list_mult", "extend_mult"])) {
+            if (!in_array($dados['key'], ["list_mult", "extend_mult", "selecao_mult"])) {
                 $string .= ", " . parent::prepareSqlColumn($dados);
             }
         }
@@ -53,8 +53,8 @@ class EntityCreateEntityDatabase extends EntityDatabase
             if (in_array($dados['key'], ["title", "link", "status", "email", "cpf", "cnpj", "telefone", "cep"]))
                 parent::exeSql("ALTER TABLE `" . PRE . $entity . "` ADD KEY `index_{$i}` (`{$dados['column']}`)");
 
-            if (in_array($dados['key'], array("extend", "extend_mult", "list", "list_mult"))) {
-                if ($dados['key'] === "extend" || $dados['key'] === "list")
+            if (in_array($dados['key'], array("extend", "extend_mult", "list", "list_mult", "selecao", "selecao_mult"))) {
+                if ($dados['key'] === "extend" || $dados['key'] === "list" || $dados['key'] === "selecao")
                     parent::createIndexFk($i, $entity, $dados['column'], $dados['relation'], $dados['key']);
                 else
                     parent::createRelationalTable($i, $dados);
