@@ -55,9 +55,9 @@ class EntityCreateEntityDatabase extends EntityDatabase
 
             if (in_array($dados['key'], array("extend", "extend_mult", "list", "list_mult", "selecao", "selecao_mult"))) {
                 if ($dados['key'] === "extend" || $dados['key'] === "list" || $dados['key'] === "selecao")
-                    parent::createIndexFk($i, $entity, $dados['column'], $dados['relation'], $dados['key']);
+                    parent::createIndexFk($entity, $dados['column'], $dados['relation'], "", $dados['key']);
                 else
-                    parent::createRelationalTable($i, $dados);
+                    parent::createRelationalTable($dados);
             }
         }
     }

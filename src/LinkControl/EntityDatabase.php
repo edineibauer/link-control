@@ -18,9 +18,9 @@ abstract class EntityDatabase
     }
 
 
-    protected function createRelationalTable($i, $dados)
+    protected function createRelationalTable($dados)
     {
-        $table = $this->entity . "_" . $dados['relation'];
+        $table = $this->entity . "_" . $dados['relation'] . "_" . $dados['column'];
 
         $string = "CREATE TABLE IF NOT EXISTS `" . PRE . $table . "` ("
             . "`{$this->entity}_id` INT(11) NOT NULL,"
@@ -29,16 +29,17 @@ abstract class EntityDatabase
 
         $this->exeSql($string);
 
-        $this->createIndexFk($i, $table, $this->entity . "_id", $this->entity);
-        $this->createIndexFk($i, $table, $dados['relation'] . "_id", $dados['relation']);
+        $this->createIndexFk($table, $this->entity . "_id", $this->entity, $dados['column']);
+        $this->createIndexFk($table, $dados['relation'] . "_id", $dados['relation'], $dados['column']);
     }
 
-    protected function createIndexFk($i, $table, $column, $tableTarget, $key = null)
+    protected function createIndexFk($table, $column, $tableTarget, $col = "", $key = null)
     {
         $delete = !$key || $key === "extend" ? "CASCADE" : "RESTRICT";
+        $col = !empty($col) ? "_" . $col : "";
 
-        $this->exeSql("ALTER TABLE `" . PRE . $table . "` ADD KEY `fk_{$column}` (`{$column}`)");
-        $this->exeSql("ALTER TABLE `" . PRE . $table . "` ADD CONSTRAINT `" . PRE . $column . "_" . $table . "` FOREIGN KEY (`{$column}`) REFERENCES `" . PRE . $tableTarget . "` (`id`) ON DELETE " . $delete . " ON UPDATE NO ACTION");
+        $this->exeSql("ALTER TABLE `" . PRE . $table . "` ADD KEY `fk_" . $column . $col . "` (`{$column}`)");
+        $this->exeSql("ALTER TABLE `" . PRE . $table . "` ADD CONSTRAINT `" . PRE . $column . $col . "_" . $table . "` FOREIGN KEY (`{$column}`) REFERENCES `" . PRE . $tableTarget . "` (`id`) ON DELETE " . $delete . " ON UPDATE NO ACTION");
     }
 
     protected function prepareSqlColumn($dados)

@@ -123,13 +123,13 @@ class EntityUpdateEntityDatabase extends EntityDatabase
             foreach ($add as $id) {
                 $dados = $this->new[$id];
                 if (in_array($this->new[$id]['key'], ["list_mult", "extend_mult", "selecao_mult"])) {
-                    parent::createRelationalTable($id, $dados);
+                    parent::createRelationalTable($dados);
 
                 } else {
                     $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " ADD " . parent::prepareSqlColumn($this->new[$id]));
 
                     if (in_array($dados['key'], array('extend', 'list', "selecao")))
-                        parent::createIndexFk($id, $this->entity, $dados['column'], $dados['relation'], $dados['key']);
+                        parent::createIndexFk($this->entity, $dados['column'], $dados['relation'], "", $dados['key']);
                 }
             }
         }
