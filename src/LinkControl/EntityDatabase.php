@@ -65,7 +65,9 @@ abstract class EntityDatabase
     {
         $exe = new SqlCommand();
         $exe->exeCommand($sql);
-        if($exe->getErro())
+        if($exe->getErro()) {
+            var_dump($sql);
             var_dump($exe->getErro());
+        }
     }
 }
