@@ -42,9 +42,8 @@ class EntityUpdateEntityDatabase extends EntityDatabase
 
         if ($changes) {
             $sql = new SqlCommand();
-            foreach ($changes as $old => $novo) {
-                $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " CHANGE {$old} " . parent::prepareSqlColumn($this->new[$novo]));
-            }
+            foreach ($changes as $id => $dados)
+                $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " CHANGE {$dados['column']} " . parent::prepareSqlColumn($this->new[$id]));
         }
     }
 
@@ -54,7 +53,7 @@ class EntityUpdateEntityDatabase extends EntityDatabase
         foreach ($this->old as $i => $d) {
             if (isset($this->new[$i])) {
                 if ($d['column'] !== $this->new[$i]['column'] || $d['unique'] !== $this->new[$i]['unique'] || $d['default'] !== $this->new[$i]['default'] || $d['size'] !== $this->new[$i]['size'])
-                    $data[$d['column']] = $i;
+                    $data[$i] = $d;
             }
         }
 
@@ -69,11 +68,11 @@ class EntityUpdateEntityDatabase extends EntityDatabase
         $del = $this->getDeletes();
 
         if ($del) {
-            foreach ($del as $column => $id) {
-                $this->dropKeysFromColumnRemoved($id);
+            foreach ($del as $id => $dic) {
+                $this->dropKeysFromColumnRemoved($id, $dic);
 
                 $sql = new SqlCommand();
-                $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " DROP COLUMN " . $column);
+                $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " DROP COLUMN " . $dic['column']);
             }
         }
     }
@@ -82,25 +81,31 @@ class EntityUpdateEntityDatabase extends EntityDatabase
     {
         $data = null;
         foreach ($this->old as $i => $d) {
-            if (!isset($this->new[$i])) {
-                $data[$d['column']] = $i;
+            if (!isset($this->new[$i]))
+                $data[$i] = $d;
+
+            if(!empty($d['select']) && (empty($this->new[$i]['select']) || $d['select'] !== $this->new[$i]['select'])) {
+                foreach ($d['select'] as $e => $oldSelect) {
+                    if(empty($this->new[$i]['select']) || !in_array($oldSelect, $this->new[$i]['select']))
+                        $data[10001 + $e] = parent::getSelecaoUnique($d['relation'], $oldSelect)[1];
+                }
             }
+
         }
 
         return $data;
     }
 
-    private function dropKeysFromColumnRemoved($id)
+    private function dropKeysFromColumnRemoved($id, $dados)
     {
-        $dados = $this->old[$id];
         $sql = new SqlCommand();
-        if ($dados['key'] === "list" || $dados['key'] === "extend" || $dados['key'] === "selecao") {
+        if ($dados['key'] === "list" || $dados['key'] === "extend" || $dados['key'] === "selecao" || $dados['key'] === "selecaoUnique") {
             $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " DROP FOREIGN KEY " . PRE . $dados['column'] . "_" . $this->entity . ", DROP INDEX fk_" . $dados['column']);
 
         } elseif ($dados['key'] === "list_mult" || $dados['key'] === "extend_mult" || $dados['key'] === "selecao_mult") {
             $sql->exeCommand("DROP TABLE " . PRE . $this->entity . "_" . $dados['relation']);
 
-        } else {
+        } elseif ($id < 10000){
 
             //INDEX
             $sql->exeCommand("SHOW KEYS FROM " . PRE . $this->entity . " WHERE KEY_NAME ='index_{$id}'");
@@ -109,9 +114,11 @@ class EntityUpdateEntityDatabase extends EntityDatabase
         }
 
         //UNIQUE
-        $sql->exeCommand("SHOW KEYS FROM " . PRE . $this->entity . " WHERE KEY_NAME ='unique_{$id}'");
-        if ($sql->getRowCount() > 0)
-            $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " DROP INDEX unique_" . $id);
+        if ($id < 10000) {
+            $sql->exeCommand("SHOW KEYS FROM " . PRE . $this->entity . " WHERE KEY_NAME ='unique_{$id}'");
+            if ($sql->getRowCount() > 0)
+                $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " DROP INDEX unique_" . $id);
+        }
     }
 
     private function addColumnsToEntity()
@@ -120,15 +127,14 @@ class EntityUpdateEntityDatabase extends EntityDatabase
 
         if ($add) {
             $sql = new SqlCommand();
-            foreach ($add as $id) {
-                $dados = $this->new[$id];
-                if (in_array($this->new[$id]['key'], ["list_mult", "extend_mult", "selecao_mult"])) {
+            foreach ($add as $id => $dados) {
+                if (in_array($dados['key'], ["list_mult", "extend_mult", "selecao_mult"])) {
                     parent::createRelationalTable($dados);
 
                 } else {
-                    $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " ADD " . parent::prepareSqlColumn($this->new[$id]));
+                    $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " ADD " . parent::prepareSqlColumn($dados));
 
-                    if (in_array($dados['key'], array('extend', 'list', "selecao")))
+                    if (in_array($dados['key'], array('extend', 'list', "selecao", "selecaoUnique")))
                         parent::createIndexFk($this->entity, $dados['column'], $dados['relation'], "", $dados['key']);
                 }
             }
@@ -138,9 +144,16 @@ class EntityUpdateEntityDatabase extends EntityDatabase
     private function getAdds()
     {
         $data = null;
-        foreach ($this->new as $i => $d) {
-            if (!isset($this->old[$i])) {
-                $data[] = $i;
+        foreach ($this->new as $i => $dic) {
+            if (!isset($this->old[$i]))
+                $data[$i] = $dic;
+
+
+            if(!empty($dic['select']) && (empty($this->old[$i]['select']) || $dic['select'] !== $this->old[$i]['select'])) {
+                foreach ($dic['select'] as $newSelect) {
+                    if(empty($this->old[$i]['select']) || !in_array($newSelect, $this->old[$i]['select']))
+                        $data[10001 + $i] = parent::getSelecaoUnique($dic['relation'], $newSelect)[1];
+                }
             }
         }
 

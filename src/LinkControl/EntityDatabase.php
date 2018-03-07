@@ -3,10 +3,13 @@
 namespace LinkControl;
 
 use ConnCrud\SqlCommand;
+use EntityForm\Metadados;
+use Helpers\Check;
 
 abstract class EntityDatabase
 {
     private $entity;
+    private $indice = 10000;
 
     /**
      * @param string $entityName
@@ -50,15 +53,25 @@ abstract class EntityDatabase
             . ($dados['default'] !== false && !empty($dados['default']) ? $this->prepareDefault($dados['default']) : ($dados['default'] !== false ? "DEFAULT NULL" : ""));
     }
 
-    private function prepareDefault($default)
+    protected function getSelecaoUnique(string $entity, string $select)
     {
-        if ($default === 'datetime' || $default === 'date' || $default === 'time')
-            return "";
+        $inputType = json_decode(file_get_contents(PATH_HOME . "vendor/conn/entity-form/entity/input_type.json"), true);
+        $dic = Metadados::getDicionario($entity);
+        foreach ($dic as $item) {
+            if($item['column'] === $select){
+                $dicionario = array_merge($inputType['default'], $inputType['selecao']);
+                $dicionario["nome"] = $select;
+                $dicionario["column"] = Check::name($select);
+                $dicionario["relation"] = $item['relation'];
+                $dicionario["default"] = false;
+                $dicionario["key"] = "selecaoUnique";
+                $this->indice++;
 
-        if (is_numeric($default))
-            return "DEFAULT {$default}";
+                return [$this->indice, $dicionario];
+            }
+        }
 
-        return "DEFAULT '{$default}'";
+        return null;
     }
 
     protected function exeSql($sql)
@@ -69,5 +82,16 @@ abstract class EntityDatabase
             var_dump($sql);
             var_dump($exe->getErro());
         }
+    }
+
+    private function prepareDefault($default)
+    {
+        if ($default === 'datetime' || $default === 'date' || $default === 'time')
+            return "";
+
+        if (is_numeric($default))
+            return "DEFAULT {$default}";
+
+        return "DEFAULT '{$default}'";
     }
 }

@@ -2,7 +2,9 @@
 
 namespace LinkControl;
 
+use Entity\Entity;
 use EntityForm\Metadados;
+use Helpers\Check;
 
 class EntityCreateEntityDatabase extends EntityDatabase
 {
@@ -19,6 +21,7 @@ class EntityCreateEntityDatabase extends EntityDatabase
             if (isset($dados['dicionario']) && !empty($dados['dicionario'])) {
                 new EntityUpdateEntityDatabase($entity, $dados['dicionario']);
             } else {
+                $data = $this->checkCreateMultSelectField($entity, $data);
                 $this->prepareCommandToCreateTable($entity, $data);
                 $this->createKeys($entity, $data);
             }
@@ -27,11 +30,36 @@ class EntityCreateEntityDatabase extends EntityDatabase
 
     /**
      * @param string $entity
+     * @param array $dicionario
+     * @return array
+     */
+    private function checkCreateMultSelectField(string $entity, array $dicionario) :array
+    {
+        foreach ($dicionario as $dic) {
+            if(in_array($dic['key'], ["list_mult", "extend_mult", "selecao_mult", "list", "extend", "selecao"]) && !empty($dic['select'])) {
+                $relDic = Metadados::getDicionario($dic['relation']);
+                foreach ($dic['select'] as $select) {
+                    foreach ($relDic as $item) {
+                        if($item['column'] === $select) {
+                            $ret = parent::getSelecaoUnique($dic['relation'], $select);
+                            $dicionario[$ret[0]] = $ret[1];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $dicionario;
+    }
+
+    /**
+     * @param string $entity
+     * @param array $data
      */
     private function prepareCommandToCreateTable(string $entity, array $data)
     {
         $string = "CREATE TABLE IF NOT EXISTS `" . PRE . $entity . "` (`id` INT(11) NOT NULL";
-        foreach ($data as $i => $dados) {
+        foreach ($data as $dados) {
             if (!in_array($dados['key'], ["list_mult", "extend_mult", "selecao_mult"])) {
                 $string .= ", " . parent::prepareSqlColumn($dados);
             }
@@ -53,8 +81,8 @@ class EntityCreateEntityDatabase extends EntityDatabase
             if (in_array($dados['key'], ["title", "link", "status", "email", "cpf", "cnpj", "telefone", "cep"]))
                 parent::exeSql("ALTER TABLE `" . PRE . $entity . "` ADD KEY `index_{$i}` (`{$dados['column']}`)");
 
-            if (in_array($dados['key'], array("extend", "extend_mult", "list", "list_mult", "selecao", "selecao_mult"))) {
-                if ($dados['key'] === "extend" || $dados['key'] === "list" || $dados['key'] === "selecao")
+            if (in_array($dados['key'], array("extend", "extend_mult", "list", "list_mult", "selecao", "selecao_mult", "selecaoUnique"))) {
+                if (in_array($dados['key'], ["extend", "list", "selecao", "selecaoUnique"]))
                     parent::createIndexFk($entity, $dados['column'], $dados['relation'], "", $dados['key']);
                 else
                     parent::createRelationalTable($dados);
