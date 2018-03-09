@@ -63,7 +63,6 @@ abstract class EntityDatabase
                 $dicionario["nome"] = $select;
                 $dicionario["column"] = Check::name($select);
                 $dicionario["relation"] = $item['relation'];
-                $dicionario["default"] = false;
                 $dicionario["key"] = "selecaoUnique";
                 $this->indice++;
 
