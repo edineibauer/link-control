@@ -53,15 +53,15 @@ abstract class EntityDatabase
             . ($dados['default'] !== false && !empty($dados['default']) ? $this->prepareDefault($dados['default']) : ($dados['default'] !== false ? "DEFAULT NULL" : ""));
     }
 
-    protected function getSelecaoUnique(string $entity, string $select)
+    protected function getSelecaoUnique(array $data, string $select)
     {
         $inputType = json_decode(file_get_contents(PATH_HOME . "vendor/conn/entity-form/entity/input_type.json"), true);
-        $dic = Metadados::getDicionario($entity);
+        $dic = Metadados::getDicionario($data['relation']);
         foreach ($dic as $item) {
             if($item['column'] === $select){
                 $dicionario = array_merge($inputType['default'], $inputType['selecao']);
                 $dicionario["nome"] = $select;
-                $dicionario["column"] = Check::name($select);
+                $dicionario["column"] = Check::name($select) . '__' . Check::name($data['column']);
                 $dicionario["relation"] = $item['relation'];
                 $dicionario["key"] = "selecaoUnique";
                 $this->indice++;

@@ -41,7 +41,7 @@ class EntityCreateEntityDatabase extends EntityDatabase
                 foreach ($dic['select'] as $select) {
                     foreach ($relDic as $item) {
                         if($item['column'] === $select) {
-                            $ret = parent::getSelecaoUnique($dic['relation'], $select);
+                            $ret = parent::getSelecaoUnique($dic, $select);
                             $dicionario[$ret[0]] = $ret[1];
                         }
                     }

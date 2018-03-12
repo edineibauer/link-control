@@ -87,7 +87,7 @@ class EntityUpdateEntityDatabase extends EntityDatabase
             if(!empty($d['select']) && (empty($this->new[$i]['select']) || $d['select'] !== $this->new[$i]['select'])) {
                 foreach ($d['select'] as $e => $oldSelect) {
                     if(empty($this->new[$i]['select']) || !in_array($oldSelect, $this->new[$i]['select']))
-                        $data[10001 + $e] = parent::getSelecaoUnique($d['relation'], $oldSelect)[1];
+                        $data[10001 + $e] = parent::getSelecaoUnique($d, $oldSelect)[1];
                 }
             }
 
@@ -152,7 +152,7 @@ class EntityUpdateEntityDatabase extends EntityDatabase
             if(!empty($dic['select']) && (empty($this->old[$i]['select']) || $dic['select'] !== $this->old[$i]['select'])) {
                 foreach ($dic['select'] as $newSelect) {
                     if(empty($this->old[$i]['select']) || !in_array($newSelect, $this->old[$i]['select']))
-                        $data[10001 + $i] = parent::getSelecaoUnique($dic['relation'], $newSelect)[1];
+                        $data[10001 + $i] = parent::getSelecaoUnique($dic, $newSelect)[1];
                 }
             }
         }
