@@ -16,17 +16,15 @@ class EntityImport
     {
         if (file_exists(PATH_HOME . "vendor/conn/{$lib}/entity/cache/info")) {
             foreach (Helper::listFolder(PATH_HOME . "vendor/conn/{$lib}/entity/cache") as $file) {
-                if ($file !== "info" && preg_match('/\w+\.json$/i', $file)) {
-                    if (!file_exists(PATH_HOME . "entity/cache/{$file}"))
-                        $this->importEntity($file, $lib);
+                if ($file !== "info" && preg_match('/\w+\.json$/i', $file) && !file_exists(PATH_HOME . "entity/cache/{$file}"))
+                    $this->importEntity($file, $lib);
 
-                    unlink(PATH_HOME . "vendor/conn/{$lib}/entity/cache/{$file}");
-                    unlink(PATH_HOME . "vendor/conn/{$lib}/entity/cache/info/{$file}");
-                }
+                    //unlink(PATH_HOME . "vendor/conn/{$lib}/entity/cache/{$file}");
+                    //unlink(PATH_HOME . "vendor/conn/{$lib}/entity/cache/info/{$file}");
             }
-            rmdir(PATH_HOME . "vendor/conn/{$lib}/entity/cache/info");
-            rmdir(PATH_HOME . "vendor/conn/{$lib}/entity/cache");
-            rmdir(PATH_HOME . "vendor/conn/{$lib}/entity");
+            //rmdir(PATH_HOME . "vendor/conn/{$lib}/entity/cache/info");
+            //rmdir(PATH_HOME . "vendor/conn/{$lib}/entity/cache");
+            //rmdir(PATH_HOME . "vendor/conn/{$lib}/entity");
         }
     }
 
