@@ -108,6 +108,14 @@ class Route
         if (file_exists($path))
             return $path;
 
+        if($content){
+            $this->file = $file;
+            $path = PATH_HOME . $this->getDir() . "view/" .  $this->file . ".php";
+
+            if (file_exists($path))
+                return $path;
+        }
+
         return null;
     }
 
