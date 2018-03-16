@@ -127,7 +127,7 @@ class Link extends Route
             copy("{$this->library}/{$library}/{$library}" . $this->getMinify($library) . ".{$extensao}", PATH_HOME . $file);
         }
 
-        return $extensao === "js" ? "<script src='" . HOME . $file . "?v=" . date('i') . "' defer ></script>\n" : "<link rel='stylesheet' href='" . HOME . $file . "?v=" . date('i') . "'>\n";
+        return $extensao === "js" ? "<script src='" . HOME . $file . "?v=" . date('ymdHi') . "' defer ></script>\n" : "<link rel='stylesheet' href='" . HOME . $file . "?v=" . date('ymdHi') . "'>\n";
     }
 
     private function createFolderAssetsLibraries($file)
