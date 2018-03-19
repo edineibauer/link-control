@@ -74,7 +74,8 @@ class Link extends Route
         $file = json_decode(file_get_contents($file), true);
 
         $this->param['js'] .= !empty($file['js']) ? $this->prepareDependency($file['js'], 'js') : null;
-        $this->param['css'] .= !empty($file['css']) ? $this->prepareDependency($file['css'], 'css') : $this->getLinkDependency("w3", "css");
+        if(!empty($file['css']))
+            $this->param['css'] .= $this->prepareDependency($file['css'], 'css');
         $this->param['font'] .= (!empty($file['icon']) ? $this->prepareIcon($file['icon']) : "") . (!empty($file['font']) ? $this->prepareFont($file['font']) : null);
         $this->param['meta'] .= $this->prepareMeta($file['meta'] ?? null);
     }
