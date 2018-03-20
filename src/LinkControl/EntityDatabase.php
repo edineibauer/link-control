@@ -47,7 +47,8 @@ abstract class EntityDatabase
 
     protected function prepareSqlColumn($dados)
     {
-        return "`{$dados['column']}` {$dados['type']} "
+        $type = in_array($dados['type'], ["float", "real", "decimal", "double"]) ? "decimal" : $dados['type'];
+        return "`{$dados['column']}` {$type} "
             . (!empty($dados['size']) ? "({$dados['size']}) " : ($dados['type'] === "varchar" ? "(254) " : " "))
             . ($dados['default'] === false ? "NOT NULL " : "")
             . ($dados['default'] !== false && !empty($dados['default']) ? $this->prepareDefault($dados['default']) : ($dados['default'] !== false ? "DEFAULT NULL" : ""));
