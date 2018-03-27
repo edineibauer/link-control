@@ -12,6 +12,7 @@
     {$meta}
     {$css}
     {$font}
+    <script>const HOME = '{$home}';const ISDEV = false;</script>
     {$js}
 
 </head>
