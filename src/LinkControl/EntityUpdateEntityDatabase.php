@@ -136,6 +136,8 @@ class EntityUpdateEntityDatabase extends EntityDatabase
 
                     if (in_array($dados['key'], array('extend', 'list', "selecao", "selecaoUnique")))
                         parent::createIndexFk($this->entity, $dados['column'], $dados['relation'], "", $dados['key']);
+                    elseif($dados['key'] === "publisher")
+                        parent::createIndexFk($this->entity, $dados['column'], "login", "", "publisher");
                 }
             }
         }

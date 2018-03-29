@@ -86,6 +86,8 @@ class EntityCreateEntityDatabase extends EntityDatabase
                     parent::createIndexFk($entity, $dados['column'], $dados['relation'], "", $dados['key']);
                 else
                     parent::createRelationalTable($dados);
+            } elseif($dados['key'] === "publisher") {
+                parent::createIndexFk($entity, $dados['column'], "login", "", "publisher");
             }
         }
     }
