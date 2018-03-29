@@ -38,7 +38,7 @@ abstract class EntityDatabase
 
     protected function createIndexFk($table, $column, $tableTarget, $col = "", $key = null)
     {
-        $delete = !$key || $key === "extend" ? "CASCADE" : "RESTRICT";
+        $delete = !$key || $key === "extend" ? "CASCADE" : ($key === "publisher" ? "SET NULL" : "RESTRICT");
         $col = !empty($col) ? "_" . $col : "";
 
         $this->exeSql("ALTER TABLE `" . PRE . $table . "` ADD KEY `fk_" . $column . $col . "` (`{$column}`)");
