@@ -99,7 +99,7 @@ class EntityUpdateEntityDatabase extends EntityDatabase
     private function dropKeysFromColumnRemoved($id, $dados)
     {
         $sql = new SqlCommand();
-        if ($dados['key'] === "list" || $dados['key'] === "extend" || $dados['key'] === "selecao" || $dados['key'] === "selecaoUnique") {
+        if ($dados['key'] === "list" || $dados['key'] === "extend" || $dados['key'] === "selecao" || $dados['key'] === "selecaoUnique" || $dados['key'] === "publisher") {
             $sql->exeCommand("ALTER TABLE " . PRE . $this->entity . " DROP FOREIGN KEY " . PRE . $dados['column'] . "_" . $this->entity . ", DROP INDEX fk_" . $dados['column']);
 
         } elseif ($dados['key'] === "list_mult" || $dados['key'] === "extend_mult" || $dados['key'] === "selecao_mult") {
