@@ -12,7 +12,7 @@
     {$meta}
     {$css}
     {$font}
-    <script>const HOME = '{$home}';const ISDEV = false;const VERSION = 1;</script>
+    <script>const HOME = '{$home}';const ISDEV = false;const VERSION = {$versao};</script>
     {$js}
 
 </head>
