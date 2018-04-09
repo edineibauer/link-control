@@ -102,7 +102,7 @@ class Route
 
     private function checkViewFile($file, $content = null)
     {
-        $this->file = $content ?? $file;
+        $this->file = !empty($content) ? $content : $file;
         $path = PATH_HOME . $this->getDir() . "view/" . ($content ? $file . "/" : "") . $this->file . ".php";
 
         if (file_exists($path))
