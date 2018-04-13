@@ -16,7 +16,9 @@ if (Check::ajax()) {
 
         $data = ["response" => 1, "error" => "", "data" => ""];
 
-        include_once PATH_HOME . (!DEV || $lib !== DOMINIO ? "vendor/conn/{$lib}/" : "") . "ajax/{$url}.php";
+        $include = PATH_HOME . (!DEV || $lib !== DOMINIO ? "vendor/conn/{$lib}/" : "") . "ajax/{$url}.php";
+        if(file_exists($include))
+            include_once $include;
 
         echo json_encode($data);
     }
