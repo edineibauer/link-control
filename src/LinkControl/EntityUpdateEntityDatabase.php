@@ -146,15 +146,18 @@ class EntityUpdateEntityDatabase extends EntityDatabase
     private function getAdds()
     {
         $data = null;
-        foreach ($this->new as $i => $dic) {
-            if (!isset($this->old[$i]))
-                $data[$i] = $dic;
+        $i = 10000;
+        foreach ($this->new as $e => $dic) {
+            if (!isset($this->old[$e]))
+                $data[$e] = $dic;
 
 
-            if(!empty($dic['select']) && (empty($this->old[$i]['select']) || $dic['select'] !== $this->old[$i]['select'])) {
+            if(!empty($dic['select']) && (empty($this->old[$e]['select']) || $dic['select'] !== $this->old[$e]['select'])) {
                 foreach ($dic['select'] as $newSelect) {
-                    if(empty($this->old[$i]['select']) || !in_array($newSelect, $this->old[$i]['select']))
-                        $data[10001 + $i] = parent::getSelecaoUnique($dic, $newSelect)[1];
+                    if(empty($this->old[$e]['select']) || !in_array($newSelect, $this->old[$e]['select'])) {
+                        $data[$i] = parent::getSelecaoUnique($dic, $newSelect)[1];
+                        $i++;
+                    }
                 }
             }
         }
