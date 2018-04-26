@@ -65,7 +65,7 @@ class Sessao
 
     private function unsetCookie()
     {
-        $token = new TableCrud(PRE . "login");
+        $token = new TableCrud("usuarios");
         $token->load("token", $_COOKIE['token']);
         if ($token->exist()) {
             $token->token = null;
@@ -86,7 +86,7 @@ class Sessao
     {
         if (isset($_COOKIE['token'])) {
 
-            $token = new TableCrud(PRE . "login");
+            $token = new TableCrud("usuarios");
             $token->load("token", $_COOKIE['token']);
             $beforeDate = date('Y-m-d H:i:s', strtotime("-2 months", strtotime(date("Y-m-d H:i:s"))));
             if ($token->exist() && $token->status === 1 && $token->token_expira > $beforeDate) {
