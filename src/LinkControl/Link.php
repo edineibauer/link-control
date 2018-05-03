@@ -65,15 +65,15 @@ class Link extends Route
                 $this->prepareDependencies($path);
         }
 
-        if (file_exists(PATH_HOME . parent::getDir() . $this->getAssets() . "/" . parent::getFile() . $this->getMinify() . ".js"))
-            $this->param['js'] .= "<script src='" . HOME . parent::getDir() . $this->getAssets() . "/" . parent::getFile() . $this->getMinify() . ".js?v=" . VERSION . "' defer ></script>\n";
-        elseif (file_exists(PATH_HOME . parent::getDir() . $this->getAssets() . "/" . parent::getFile() . ".js"))
-            $this->param['js'] .= "<script src='" . HOME . parent::getDir() . $this->getAssets() . "/" . parent::getFile() . ".js?v=" . VERSION . "' defer ></script>\n";
+        if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js"))
+            $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js?v=" . VERSION . "' defer ></script>\n";
+        elseif (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".js"))
+            $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".js?v=" . VERSION . "' defer ></script>\n";
 
-        if (file_exists(PATH_HOME . parent::getDir() . $this->getAssets() . "/" . parent::getFile() . $this->getMinify() . ".css"))
-            $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . $this->getAssets() . "/" . parent::getFile() . $this->getMinify() . ".css?v=" . VERSION . "'>\n";
-        elseif (file_exists(PATH_HOME . parent::getDir() . $this->getAssets() . "/" . parent::getFile() . ".css"))
-            $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . $this->getAssets() . "/" . parent::getFile() . ".css?v=" . VERSION . "'>\n";
+        if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".css"))
+            $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".css?v=" . VERSION . "'>\n";
+        elseif (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".css"))
+            $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".css?v=" . VERSION . "'>\n";
 
     }
 
