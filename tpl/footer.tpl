@@ -1,3 +1,4 @@
+{$js}
 {if $analytics != ""}
     <script async src="https://www.googletagmanager.com/gtag/js?id={$analytics}"></script>
     {literal}
