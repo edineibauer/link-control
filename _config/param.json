@@ -1,0 +1,20 @@
+{
+  "title": "Link control",
+  "js": [
+    "jquery",
+    "boot",
+    "panel",
+    "app"
+  ],
+  "css": [
+    "w3",
+    "theme",
+    "panel"
+  ],
+  "font": [
+    "roboto"
+  ],
+  "icon": [
+    "material"
+  ]
+}
