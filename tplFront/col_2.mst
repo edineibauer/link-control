@@ -1,0 +1,5 @@
+<div class="col flex {{class}}" {{attr}} {{#id}}id="{{id}}"{{/id}}>
+    {{#content}}
+        <div class="col flex s12 m6 padding-small flex">{{{.}}}</div>
+    {{/content}}
+</div>

@@ -31,16 +31,26 @@ function template(string $template, $var = []): string
 }
 
 //containers
-define("TPL_1200", "div_1200");
-define("TPL_900", "div_900");
-define("TPL_SECTION", "section");
+define("TPL_SECTION_LARGE", "section_large");
+define("TPL_SECTION_MEDIUM", "section_medium");
+define("TPL_SECTION_SMALL", "section_small");
+define("TPL_SECTION_FULL", "section_full");
 
 //colunas
+define("TPL_COL_1", "col_1");
 define("TPL_COL_2", "col_2");
 define("TPL_COL_3", "col_3");
 define("TPL_COL_4", "col_4");
 define("TPL_COL_5", "col_5");
 define("TPL_COL_6", "col_6");
+
+//titulos
+define("TPL_H1", "h1");
+define("TPL_H2", "h2");
+define("TPL_H3", "h3");
+define("TPL_H4", "h4");
+define("TPL_H5", "h5");
+define("TPL_H6", "h6");
 
 //post
 define("TPL_POST_CARD", "post_card");
@@ -57,9 +67,4 @@ define("TPL_INPUT_ICON", "input_icon");
 define("TPL_UL", "ul");
 
 //img
-define("TPL_IMG_100", "img_100");
-define("TPL_IMG_200", "img_200");
-
-//text
-define("TPL_TEXT", "text");
-define("TPL_TEXT_CENTER", "text_center");
+define("TPL_IMG", "img");

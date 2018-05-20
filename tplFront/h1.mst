@@ -1,0 +1,7 @@
+<header class="col align-center {{class}}" {{attr}} {{#id}}id="{{id}}"{{/id}}>
+    <h1>
+        {{#content}}
+            {{{.}}}
+        {{/content}}
+    </h1>
+</header>
