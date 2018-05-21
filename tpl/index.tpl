@@ -22,57 +22,62 @@
     <script>const HOME = '{$home}';const ISDEV = false;const VERSION = {$version};</script>
 </head>
 <body>
-    <header class="col theme padding-medium card header margin-0">
-        <div class="col container-1200">
-            <a href="{$home}" class="left padding-tiny header-logo">
+<div class="col theme padding-medium card header margin-0">
+    <div class="col container-1200">
+        <header href="{$home}" class="left padding-tiny header-logo">
+            <a href="{$home}" class="left">
                 {if $logo != ""}
-                    <img src="{$logo}" alt="logo do site {$sitename}" title="{$sitename} {($sitesub != "") ? " - $sitesub" : ""}" class="col" height="39" style="height: 39px;width: auto">
+                    <img src="{$logo}" alt="logo do site {$sitename}"
+                         title="{$sitename} {($sitesub != "") ? " - $sitesub" : ""}" class="col" height="39"
+                         style="height: 39px;width: auto">
                     <h1 class="padding-0" style="font-size:0">{$sitename}</h1>
                 {else}
                     <h1>{$sitename}</h1>
                 {/if}
             </a>
-            <nav class="right padding-tiny" role="navigation">
-                <header>
-                    <h2 class="padding-0" style="font-size:0">Menu</h2>
-                </header>
-                <ul class="right upper header-nav">
-                    <li class="left padding-0 padding-right">
-                        <a href="{$home}sobre" class="right padding-medium">sobre nós</a>
-                    </li>
-                    <li class="left padding-0 padding-right">
-                        <a href="{$home}nossos-servicos" class="right padding-medium">nossos serviços</a>
-                    </li>
-                    <li class="left padding-0 padding-right">
-                        <a href="{$home}atendimento" class="right padding-medium">atendimento</a>
-                    </li>
-                    <li class="left padding-0">
-                        <a href="{$home}login" class="right padding-medium">login</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <div class="col" id="content">
-        <div class="loader">
-            <svg viewBox="0 0 32 32" width="32" height="32">
-                <circle id="spinner" style="stroke: {$theme}" cx="16" cy="16" r="14" fill="none"></circle>
-            </svg>
-        </div>
+        </header>
+        <nav class="right padding-tiny" role="navigation">
+            <ul class="right upper header-nav">
+                <li class="left padding-0 padding-right">
+                    <a href="{$home}sobre" class="right padding-medium">sobre nós</a>
+                </li>
+                <li class="left padding-0 padding-right">
+                    <a href="{$home}nossos-servicos" class="right padding-medium">nossos serviços</a>
+                </li>
+                <li class="left padding-0 padding-right">
+                    <a href="{$home}atendimento" class="right padding-medium">atendimento</a>
+                </li>
+                <li class="left padding-0">
+                    <a href="{$home}login" class="right padding-medium">login</a>
+                </li>
+            </ul>
+        </nav>
     </div>
+</div>
 
-    {$js}
-    {if $analytics != ""}
-        <script async src="https://www.googletagmanager.com/gtag/js?id={$analytics}"></script>
-        <script>
-            {literal}
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            {/literal}
-            gtag('config', '{$analytics}');
-        </script>
-    {/if}
+<section class="col" id="content" data-content="{$route}">
+    <div class="loader">
+        <svg viewBox="0 0 32 32" width="32" height="32">
+            <circle id="spinner" style="stroke: {$theme}" cx="16" cy="16" r="14" fill="none"></circle>
+        </svg>
+    </div>
+</section>
+
+{$js}
+{if $analytics != ""}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={$analytics}"></script>
+    <script>
+        {literal}
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+        {/literal}
+        gtag('config', '{$analytics}');
+    </script>
+{/if}
 </body>
 </html>
