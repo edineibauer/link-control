@@ -103,14 +103,14 @@ class Route
     private function checkViewFile($file, $content = null)
     {
         $this->file = !empty($content) ? $content : $file;
-        $pathReturn = $this->getDir() . "view/" . ($content ? $file . "/" : "") . $this->file . ".php";
+        $pathReturn = $this->getDir() . "ajax/view/" . ($content ? $file . "/" : "") . $this->file . ".php";
 
         if (file_exists(PATH_HOME . $pathReturn))
             return $pathReturn;
 
         if($content){
             $this->file = $file;
-            $pathReturn = $this->getDir() . "view/" .  $this->file . ".php";
+            $pathReturn = $this->getDir() . "ajax/view/" .  $this->file . ".php";
 
             if (file_exists(PATH_HOME . $pathReturn))
                 return $pathReturn;
@@ -123,7 +123,7 @@ class Route
     {
         $this->file = "404";
         $this->lib = "link-control";
-        $this->route = (DEV && DOMINIO === "link-control" ? "" : "vendor/conn/link-control/") . "view/404.php";
+        $this->route = (DEV && DOMINIO === "link-control" ? "" : "vendor/conn/link-control/") . "ajax/view/404.php";
     }
 
     /**
