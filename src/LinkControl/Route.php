@@ -95,7 +95,7 @@ class Route
      * Retorna o link de acesso para DESENVOLVIMENTO ou PRODUÇÃO
      *
      * @return string
-    */
+     */
     protected function getDir() :string {
         return !DEV || $this->lib !== DOMINIO ? "vendor/conn/{$this->lib}/" : "";
     }
@@ -103,17 +103,17 @@ class Route
     private function checkViewFile($file, $content = null)
     {
         $this->file = !empty($content) ? $content : $file;
-        $path = PATH_HOME . $this->getDir() . "view/" . ($content ? $file . "/" : "") . $this->file . ".php";
+        $pathReturn = $this->getDir() . "view/" . ($content ? $file . "/" : "") . $this->file . ".php";
 
-        if (file_exists($path))
-            return $path;
+        if (file_exists(PATH_HOME . $pathReturn))
+            return $pathReturn;
 
         if($content){
             $this->file = $file;
-            $path = PATH_HOME . $this->getDir() . "view/" .  $this->file . ".php";
+            $pathReturn = $this->getDir() . "view/" .  $this->file . ".php";
 
-            if (file_exists($path))
-                return $path;
+            if (file_exists(PATH_HOME . $pathReturn))
+                return $pathReturn;
         }
 
         return null;
@@ -123,12 +123,12 @@ class Route
     {
         $this->file = "404";
         $this->lib = "link-control";
-        $this->route = PATH_HOME . (DEV && DOMINIO === "link-control" ? "" : "vendor/conn/link-control/") . "view/404.php";
+        $this->route = (DEV && DOMINIO === "link-control" ? "" : "vendor/conn/link-control/") . "view/404.php";
     }
 
     /**
      * @return array
-    */
+     */
     private function getRouteFile()
     {
         return json_decode(file_get_contents(PATH_HOME . "_config/route.json"), true);
