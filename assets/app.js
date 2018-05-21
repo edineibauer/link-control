@@ -67,8 +67,8 @@
                 app.updateContent(initialData);
         }
 
-        let fileUp = (typeof (tipo) === "undefined" ? "view/" + app.file : "dobra/" + app.file);
-        post(app.lib, fileUp, function (g) {
+        var fileUp = (typeof (tipo) === "undefined" ? "view/" + app.file : "dobra/" + app.file);
+        post(app.lib, fileUp, {}, function (g) {
             app.updateContent(g);
             db.set(app.lib + "-" + app.file + "-" + folder, {data: g});
 
