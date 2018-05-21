@@ -22,7 +22,7 @@
     <script>const HOME = '{$home}';const ISDEV = false;const VERSION = {$version};</script>
 </head>
 <body>
-<div class="col theme padding-medium card header margin-0">
+<div class="col padding-medium theme z-depth-2 header relative" style="z-index: 99">
     <div class="col container-1200">
         <header href="{$home}" class="left padding-tiny header-logo">
             <a href="{$home}" class="left">
