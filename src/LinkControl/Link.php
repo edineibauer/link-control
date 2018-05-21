@@ -27,7 +27,8 @@ class Link extends Route
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
         parent::checkRoute(!empty($this->url[0]) ? $this->url[0] : 'index', $this->url[1] ?? null);
         $this->checkParamPage();
-        $this->param["route"] = parent::getRoute();
+        $this->param["lib"] = parent::getLib();
+        $this->param["file"] = parent::getFile();
         new Sessao();
     }
 
@@ -66,6 +67,7 @@ class Link extends Route
                 $this->prepareDependencies($path);
         }
 
+        $this->param['js'] .= "<script src='" . HOME . "vendor/conn/link-control/assets/idb.js?v=" . VERSION . "' defer ></script>\n";
         $this->param['js'] .= "<script src='" . HOME . "vendor/conn/link-control/assets/app.js?v=" . VERSION . "' defer ></script>\n";
         if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js"))
             $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js?v=" . VERSION . "' defer ></script>\n";
