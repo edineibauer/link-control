@@ -27,6 +27,7 @@ class Link extends Route
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
         parent::checkRoute(!empty($this->url[0]) ? $this->url[0] : 'index', $this->url[1] ?? null);
         $this->checkParamPage();
+        $this->param['js'] .= "<script src='" . HOME . "vendor/conn/link-control/assets/app.js?v=" . VERSION . "' defer ></script>\n";
         $this->param["route"] = parent::getRoute();
         new Sessao();
     }

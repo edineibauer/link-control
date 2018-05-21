@@ -357,4 +357,9 @@
                 console.log('Service Worker Registered');
             });
     }
+
+    var $content = $("#content");
+    post('link-control', 'route/content', {src: $content.attr("data-content")}, function (g) {
+        $content.html(g);
+    });
 })();
