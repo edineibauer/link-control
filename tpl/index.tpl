@@ -55,13 +55,13 @@
     </div>
 </div>
 
-<section class="col" id="content" data-content="{$route}">
-    <div class="loader">
-        <svg viewBox="0 0 32 32" width="32" height="32">
-            <circle id="spinner" style="stroke: {$theme}" cx="16" cy="16" r="14" fill="none"></circle>
-        </svg>
-    </div>
-</section>
+<div class="loader">
+    <svg viewBox="0 0 32 32" width="32" height="32">
+        <circle id="spinner" style="stroke: {$theme}" cx="16" cy="16" r="14" fill="none"></circle>
+    </svg>
+</div>
+
+<section class="col hide" id="content" data-lib="{$lib}" data-file="{$file}"></section>
 
 {$js}
 {if $analytics != ""}
