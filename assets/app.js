@@ -28,7 +28,7 @@
                 })
             }
         } else {
-            app.content.html(data);
+            app.content.append(data);
         }
 
         if (app.isLoading) {
