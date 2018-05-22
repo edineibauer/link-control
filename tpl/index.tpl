@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{$title}</title>
@@ -19,7 +19,9 @@
     {$meta}
     {$css}
     {$font}
-    <script>const HOME = '{$home}';const ISDEV = false;const VERSION = {$version};</script>
+    <script>const HOME = '{$home}';
+        const ISDEV = false;
+        const VERSION = {$version};</script>
 </head>
 <body>
 <div class="col padding-medium theme z-depth-2 header relative" style="z-index: 99">
@@ -37,7 +39,7 @@
             </a>
         </header>
         <nav class="right padding-tiny" role="navigation">
-            <ul class="right upper header-nav">
+            <ul class="right upper header-nav hide-medium hide-small">
                 <li class="left padding-0 padding-right">
                     <a href="{$home}sobre" class="right padding-medium">sobre nós</a>
                 </li>
@@ -47,13 +49,27 @@
                 <li class="left padding-0 padding-right">
                     <a href="{$home}atendimento" class="right padding-medium">atendimento</a>
                 </li>
-                <li class="left padding-0">
-                    <a href="{$home}login" class="right padding-medium">login</a>
-                </li>
+                {if $loged}
+                    <button onclick="logoutDashboard();"
+                            class="logout-button right color-white opacity hover-shadow margin-0 hover-opacity-off btn-floating">
+                        <i class="material-icons color-hover-text-red" style="font-size:0.9em">power_settings_new</i>
+                    </button>
+                {else}
+                    <li class="left padding-0">
+                        <a href="{$home}login" class="right padding-medium">login</a>
+                    </li>
+                {/if}
             </ul>
+
+            <button class="open-menu hide-large right color-hover-theme font-large theme-l1" style="padding: 6px 15px 1px">
+                <i class="material-icons">menu</i>
+            </button>
         </nav>
     </div>
 </div>
+
+
+<div class="overlay hide-large animate-opacity" id="myOverlay"></div>
 
 <div class="loader">
     <svg viewBox="0 0 32 32" width="32" height="32">

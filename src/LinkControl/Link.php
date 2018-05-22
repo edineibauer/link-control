@@ -30,6 +30,7 @@ class Link extends Route
         $this->param["lib"] = parent::getLib();
         $this->param["file"] = parent::getFile();
         new Sessao();
+        $this->param['loged'] = !empty($_SESSION['userlogin']);
     }
 
     /**
