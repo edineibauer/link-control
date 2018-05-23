@@ -1,3 +1,6 @@
+<?php
+ob_start();
+?>
 <div class="row">
     <div class="panel align-center" style="max-width: 900px; margin: auto; float: initial">
 
@@ -20,3 +23,7 @@
 
     </div>
 </div>
+<?php
+$data['data']['title'] = "404 [não encontrado]";
+$data['data']['content'] = ob_get_contents();
+ob_end_clean();
