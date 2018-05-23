@@ -39,13 +39,13 @@
         <nav class="right padding-tiny" role="navigation">
             <ul class="right upper header-nav hide-medium hide-small">
                 <li class="left padding-0 padding-right">
-                    <a href="{$home}sobre" data-lib="site-transportadora" class="right padding-medium">sobre nós</a>
+                    <a href="{$home}sobre" class="right padding-medium">sobre nós</a>
                 </li>
                 <li class="left padding-0 padding-right">
-                    <a href="{$home}nossos-servicos" data-lib="site-transportadora" class="right padding-medium">nossos serviços</a>
+                    <a href="{$home}nossos-servicos" class="right padding-medium">nossos serviços</a>
                 </li>
                 <li class="left padding-0 padding-right">
-                    <a href="{$home}atendimento" data-lib="site-transportadora" class="right padding-medium">atendimento</a>
+                    <a href="{$home}atendimento" class="right padding-medium">atendimento</a>
                 </li>
                 {if $loged}
                     <button onclick="logoutDashboard();"
@@ -54,7 +54,7 @@
                     </button>
                 {else}
                     <li class="left padding-0">
-                        <a href="{$home}login" data-lib="session-control" class="right padding-medium">login</a>
+                        <a href="{$home}login" class="right padding-medium">login</a>
                     </li>
                 {/if}
             </ul>
