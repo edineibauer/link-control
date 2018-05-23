@@ -85,11 +85,6 @@
         }
     };
 
-    app.getAssets = function() {
-        let js = HOME + "assets/" + app.file + ".js";
-        let css = HOME + "assets/" + app.file + ".css";
-    };
-
     // TODO add service worker code here
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker
