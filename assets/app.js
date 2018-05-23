@@ -40,9 +40,10 @@
 
     app.getRequestData = function (folder) {
         get(app.lib, folder + "/" + app.file, function (g) {
-            app.updateContent(g);
+            app.updateContent(g.content);
 
             if (folder === "view") {
+                $("title").text(g.title);
                 app.loadScriptUrl();
                 app.getRequestData('dobra');
             } else if (app.isLoading) {
