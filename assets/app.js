@@ -30,7 +30,6 @@
             app.file = url === HOME || url + "/" === HOME ? "index" : url.replace(HOME, "");
             history.pushState(null, null, url);
             app.content.attr("data-load", "1").addClass("opacity");
-            app.loadStyleUrl();
             app.getRequestData('view');
 
         } else if(!app.isLoading){
@@ -46,18 +45,18 @@
                 if (folder === "view") {
                     $("title").text(g.title);
                     app.lib = g.lib;
-                    app.loadScriptUrl();
+                    app.loadStyleUrl(g.path);
+                    app.loadScriptUrl(g.path);
                     app.getRequestData('dobra');
                 } else if (app.isLoading) {
                     app.spinner.addClass('hide');
                     app.isLoading = false;
                 }
             } else {
-                if (folder === "view") {
+                if (folder === "view")
                     app.content.html("").attr("data-load", "0").removeClass("opacity");
-                    app.loadScriptUrl();
-                    app.getRequestData('dobra');
-                } else if (app.isLoading) {
+
+                if (app.isLoading) {
                     app.spinner.addClass('hide');
                     app.isLoading = false;
                 }
@@ -65,15 +64,16 @@
         });
     };
 
-    app.loadStyleUrl = function() {
-        let css = HOME + (ISDEV && app.lib === DOMINIO ? "" : "vendor/conn/"+ app.lib +"/") + "assets/" + app.file + ".css";
+    app.loadStyleUrl = function(path) {
+        console.log(path);
+        let css = path + "assets/" + app.file + ".css";
         let $head = $("head");
         if(!$head.find("link[href='"+ css +"?v=" + VERSION + "']").length)
             $head.template("style", {"href": css, "version": VERSION});
     }
 
-    app.loadScriptUrl = function() {
-        let js = HOME + (ISDEV && app.lib === DOMINIO ? "" : "vendor/conn/"+ app.lib +"/") + "assets/" + app.file + ".js";
+    app.loadScriptUrl = function(path) {
+        let js = path + "assets/" + app.file + ".js";
         let $head = $("head");
         if(!$head.find("script[src='"+ js +"?v=" + VERSION + "']").length)
             $head.template("script", {"src": js, "version": VERSION});
@@ -111,8 +111,6 @@
     $("a").off("click").on("click", function (e) {
         e.preventDefault();
         let url = $(this).attr("href");
-        app.lib = $(this).attr("data-lib") ? $(this).attr("data-lib") : app.content.attr("data-lib");
-
         history.pushState(null, null, url);
         app.getUrl(url);
     });
