@@ -3,56 +3,90 @@
 
     var app = {
         content: $("#content"),
+        url: '',
         lib: $("#content").attr("data-lib"),
         file: $("#content").attr("data-file"),
         isLoading: true,
         spinner: $('.loader')
     };
 
-    app.clearContent = function () {
-        if (!app.isLoading) {
-            app.content.html("").addClass("hide");
-            app.isLoading = true;
-            app.spinner.removeClass("hide");
-        }
+    app.reloadUrl = function(url) {
+        app.isLoading = true;
+        app.spinner.removeClass("hide");
+        app.content.addClass("opacity");
+        setTimeout(function () {
+            app.url = "";
+            app.getUrl(url);
+        },500);
     }
 
     app.getUrl = function (url) {
-        app.clearContent();
-        app.file = url === HOME || url + "/" === HOME ? "index" : url.replace(HOME, "");
+        if(app.url === "" || app.url !== url) {
+            if (!app.isLoading) {
+                app.isLoading = true;
+                app.spinner.removeClass("hide");
+            }
+            app.url = url;
+            app.file = url === HOME || url + "/" === HOME ? "index" : url.replace(HOME, "");
+            history.pushState(null, null, url);
+            app.content.attr("data-load", "1").addClass("opacity");
+            app.loadStyleUrl();
+            app.getRequestData('view');
 
-        history.pushState(null, null, url);
-        app.getRequestData(url, 'view');
+        } else if(!app.isLoading){
+            app.reloadUrl(url);
+        }
     }
 
-    app.getRequestData = function (url, folder) {
+    app.getRequestData = function (folder) {
         get(app.lib, folder + "/" + app.file, function (g) {
             app.updateContent(g);
 
-            if (folder === "view")
-                app.getRequestData(url.replace('/view/', '/dobra/'), 'dobra');
+            if (folder === "view") {
+                app.loadScriptUrl();
+                app.getRequestData('dobra');
+            } else if (app.isLoading) {
+                app.spinner.addClass('hide');
+                app.isLoading = false;
+            }
         });
     };
 
+    app.loadStyleUrl = function() {
+        let css = HOME + (ISDEV && app.lib === DOMINIO ? "" : "vendor/conn/"+ app.lib +"/") + "assets/" + app.file + ".css";
+        let $head = $("head");
+        if(!$head.find("link[href='"+ css +"?v=" + VERSION + "']").length)
+            $head.template("style", {"href": css, "version": VERSION});
+    }
+
+    app.loadScriptUrl = function() {
+        let js = HOME + (ISDEV && app.lib === DOMINIO ? "" : "vendor/conn/"+ app.lib +"/") + "assets/" + app.file + ".js";
+        let $head = $("head");
+        if(!$head.find("script[src='"+ js +"?v=" + VERSION + "']").length)
+            $head.template("script", {"src": js, "version": VERSION});
+    }
+
     // Updates content app, gerencia motor de templates
     app.updateContent = function (data) {
-        if ($.isArray(data) && (typeof (data.template) !== "undefined" || typeof (data[0].template) !== "undefined")) {
+        if ($.isArray(data) || typeof (data.template) !== "undefined") {
             if (typeof (data.template) !== "undefined") {
                 app.content.template(data.template, data);
             } else {
                 $.each(data, function (i, e) {
-                    app.content.template(e.template, e);
-                })
+                    app.updateContent(e);
+                });
             }
         } else {
-            app.content.append(data);
+            if (app.content.attr("data-load") === '1')
+                app.content.html(data).attr("data-load", "0").removeClass("opacity");
+            else
+                app.content.append(data);
         }
+    };
 
-        if (app.isLoading) {
-            app.spinner.addClass('hide');
-            app.content.removeClass('hide');
-            app.isLoading = false;
-        }
+    app.getAssets = function() {
+        let js = HOME + "assets/" + app.file + ".js";
+        let css = HOME + "assets/" + app.file + ".css";
     };
 
     // TODO add service worker code here
@@ -67,8 +101,7 @@
     $("a").off("click").on("click", function (e) {
         e.preventDefault();
         let url = $(this).attr("href");
-        if($(this).attr("data-lib"))
-            app.lib = $(this).attr("data-lib");
+        app.lib = $(this).attr("data-lib") ? $(this).attr("data-lib") : app.content.attr("data-lib");
 
         history.pushState(null, null, url);
         app.getUrl(url);
