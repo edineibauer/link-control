@@ -53,6 +53,7 @@
                 }
             } else {
                 if (folder === "view") {
+                    app.content.html("").attr("data-load", "0").removeClass("opacity");
                     app.loadScriptUrl();
                     app.getRequestData('dobra');
                 } else if (app.isLoading) {

@@ -21,13 +21,13 @@ if (Check::ajax()) {
         if (file_exists($include)) {
             include_once $include;
 
-            if (!empty($data['data']['title']) && preg_match('/^view\/\w+/i', $url) && file_exists(PATH_HOME . (!DEV || $lib !== DOMINIO ? "vendor/conn/{$lib}/" : "") . "param/{$url}.json")) {
+            if (!empty($data['data']['title']) && preg_match('/^view\//i', $url) && file_exists(PATH_HOME . (!DEV || $lib !== DOMINIO ? "vendor/conn/{$lib}/" : "") . "param/{$url}.json")) {
                 $file = json_decode(file_get_contents(PATH_HOME . (!DEV || $lib !== DOMINIO ? "vendor/conn/{$lib}/" : "") . "param/{$url}.json"), true);
 
                 if ($file['title'])
                     $data['data']['title'] = $this->prepareTitle($file['title']);
             }
-        } elseif(preg_match('/^view\/\w+/i', $url)) {
+        } elseif(preg_match('/^view\//i', $url)) {
             include_once PATH_HOME . "vendor/conn/link-control/ajax/view/404.php";
         }
         echo json_encode($data);
