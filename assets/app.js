@@ -40,15 +40,25 @@
 
     app.getRequestData = function (folder) {
         get(app.lib, folder + "/" + app.file, function (g) {
-            app.updateContent(g.content);
+            if(g) {
+                app.updateContent(g.content);
 
-            if (folder === "view") {
-                $("title").text(g.title);
-                app.loadScriptUrl();
-                app.getRequestData('dobra');
-            } else if (app.isLoading) {
-                app.spinner.addClass('hide');
-                app.isLoading = false;
+                if (folder === "view") {
+                    $("title").text(g.title);
+                    app.loadScriptUrl();
+                    app.getRequestData('dobra');
+                } else if (app.isLoading) {
+                    app.spinner.addClass('hide');
+                    app.isLoading = false;
+                }
+            } else {
+                if (folder === "view") {
+                    app.loadScriptUrl();
+                    app.getRequestData('dobra');
+                } else if (app.isLoading) {
+                    app.spinner.addClass('hide');
+                    app.isLoading = false;
+                }
             }
         });
     };
@@ -69,19 +79,21 @@
 
     // Updates content app, gerencia motor de templates
     app.updateContent = function (data) {
-        if ($.isArray(data) || typeof (data.template) !== "undefined") {
-            if (typeof (data.template) !== "undefined") {
-                app.content.template(data.template, data);
+        if(typeof (data) !== "undefined") {
+            if ($.isArray(data) || typeof (data.template) !== "undefined") {
+                if (typeof (data.template) !== "undefined") {
+                    app.content.template(data.template, data);
+                } else {
+                    $.each(data, function (i, e) {
+                        app.updateContent(e);
+                    });
+                }
             } else {
-                $.each(data, function (i, e) {
-                    app.updateContent(e);
-                });
+                if (app.content.attr("data-load") === '1')
+                    app.content.html(data).attr("data-load", "0").removeClass("opacity");
+                else
+                    app.content.append(data);
             }
-        } else {
-            if (app.content.attr("data-load") === '1')
-                app.content.html(data).attr("data-load", "0").removeClass("opacity");
-            else
-                app.content.append(data);
         }
     };
 
