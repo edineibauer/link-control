@@ -11,6 +11,7 @@ namespace LinkControl;
 
 use ConnCrud\Read;
 use EntityForm\Dicionario;
+use Helpers\Check;
 use Helpers\Helper;
 
 class Link extends Route
@@ -22,14 +23,14 @@ class Link extends Route
 
     function __construct()
     {
-        $this->library = "http://dev.ontab.com.br";
+        $this->devLibrary = "http://dev.ontab.com.br";
         $this->param = ["title" => SITENAME, "version" => VERSION, "meta" => "", "css" => "", "js" => "", "font" => "", "analytics" => defined("ANALYTICS") ? ANALYTICS : ""];
         $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
         parent::checkRoute(!empty($this->url[0]) ? $this->url[0] : 'index', $this->url[1] ?? null);
         $this->checkParamPage();
+        new Sessao();
         $this->param["lib"] = parent::getLib();
         $this->param["file"] = parent::getFile();
-        new Sessao();
         $this->param['loged'] = !empty($_SESSION['userlogin']);
     }
 
@@ -68,17 +69,15 @@ class Link extends Route
                 $this->prepareDependencies($path);
         }
 
-        $this->param['js'] .= "<script src='" . HOME . "vendor/conn/link-control/assets/app.js?v=" . VERSION . "' defer ></script>\n";
-        if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js"))
-            $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js?v=" . VERSION . "' defer ></script>\n";
-        elseif (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".js"))
-            $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".js?v=" . VERSION . "' defer ></script>\n";
+        $this->param['js'] .= "<script src='" . HOME . "vendor/conn/link-control/assets/app.min.js?v=" . VERSION . "' defer ></script>\n";
 
-        if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".css"))
-            $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".css?v=" . VERSION . "'>\n";
-        elseif (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".css"))
-            $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".css?v=" . VERSION . "'>\n";
+        if(DEV) {
+            if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".min.js"))
+                $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".min.js?v=" . VERSION . "' defer ></script>\n";
 
+            if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".min.css"))
+                $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".min.css?v=" . VERSION . "'>\n";
+        }
     }
 
     /**
@@ -177,9 +176,9 @@ class Link extends Route
     private function prepareDependency(array $param, string $extensao): string
     {
         $return = "";
-        foreach ($param as $dependency) {
+        foreach ($param as $dependency)
             $return .= $this->getLinkDependency($dependency, $extensao);
-        }
+
         return $return;
     }
 
@@ -206,9 +205,8 @@ class Link extends Route
         $return = "";
 
         if ($param) {
-            foreach ($param as $dependency) {
+            foreach ($param as $dependency)
                 $return .= "<meta " . (isset($dependency['name']) ? "name='{$dependency['name']}' " : "") . (isset($dependency['property']) ? "property='{$dependency['property']}' " : "") . "content='{$dependency['content']}'>";
-            }
         }
 
         return $return;
@@ -216,10 +214,13 @@ class Link extends Route
 
     private function getLinkDependency($library, $extensao)
     {
-        $file = $this->getAssets() . "/{$library}/{$library}" . $this->getMinify($library) . ".{$extensao}";
+        $file = (DEV ? "assetsPublic" : "assets") . "/{$library}/{$library}" . ".min.{$extensao}";
         if (!file_exists($file)) {
             $this->createFolderAssetsLibraries($file);
-            copy("{$this->library}/{$library}/{$library}" . $this->getMinify($library) . ".{$extensao}", PATH_HOME . $file);
+            if(Helper::isOnline("{$this->devLibrary}/{$library}/{$library}" . ".min.{$extensao}"))
+                copy("{$this->devLibrary}/{$library}/{$library}" . ".min.{$extensao}", PATH_HOME . $file);
+            elseif(Helper::isOnline("{$this->devLibrary}/{$library}/{$library}" . ".{$extensao}"))
+                copy("{$this->devLibrary}/{$library}/{$library}" . ".{$extensao}", PATH_HOME . $file);
         }
 
         return $extensao === "js" ? "<script src='" . HOME . $file . "?v=" . VERSION . "' defer ></script>\n" : "<link rel='stylesheet' href='" . HOME . $file . "?v=" . VERSION . "'>\n";
@@ -238,18 +239,7 @@ class Link extends Route
     }
 
     /**
-     * Retorna .min para PRODUÇÃO ou vazio para DESENVOLVIMENTO
-     *
-     * @return string
-     */
-    private function getMinify($library = null): string
-    {
-        return !DEV || in_array($library, ["angular", "jquery", "materialize", "bootstrap"]) ? ".min" : "";
-    }
-
-    /**
      * Retorna o Assets para produçao ou Desenvolvimento
-     *
      * @return string
      */
     private function getAssets(): string
