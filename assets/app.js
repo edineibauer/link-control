@@ -39,12 +39,13 @@
     }
 
     app.getRequestData = function (folder) {
-        get(app.lib, folder + "/" + app.file, function (g) {
+        get(folder + "/" + app.file, function (g) {
             if(g) {
                 app.updateContent(g.content);
 
                 if (folder === "view") {
                     $("title").text(g.title);
+                    app.lib = g.lib;
                     app.loadScriptUrl();
                     app.getRequestData('dobra');
                 } else if (app.isLoading) {
