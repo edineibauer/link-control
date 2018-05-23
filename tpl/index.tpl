@@ -19,7 +19,7 @@
     {$meta}
     {$css}
     {$font}
-    <script>const HOME = '{$home}';const ISDEV = false;const DOMINIO = '{$dominio}';const VERSION = {$version};</script>
+    <script>const HOME = '{$home}';const ISDEV = {$dev};const DOMINIO = '{$dominio}';const VERSION = {$version};</script>
 </head>
 <body>
 <div class="col padding-medium theme z-depth-2 header relative" style="z-index: 99">
@@ -75,7 +75,7 @@
     </svg>
 </div>
 
-<section class="col color-grey-light" id="content" data-lib="{$lib}" data-file="{$file}" data-load="0"></section>
+<section class="col" id="content" data-lib="{$lib}" data-file="{$file}" data-load="0"></section>
 
 {$js}
 {if $analytics != ""}
