@@ -56,6 +56,10 @@ define("TPL_H6", "h6");
 define("TPL_POST_CARD", "post_card");
 define("TPL_POST_FLAT", "post_flat");
 
+//files
+define("TPL_SCRIPT", "script");
+define("TPL_STYLE", "style");
+
 //containers personalizados
 define("TPL_PARALLAX", "parallax");
 

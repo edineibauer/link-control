@@ -1,23 +1,40 @@
 (function () {
     'use strict';
 
-    var initialData = "Olá Mundo";
-
     var app = {
         content: $("#content"),
         lib: $("#content").attr("data-lib"),
         file: $("#content").attr("data-file"),
         isLoading: true,
-        spinner: document.querySelector('.loader')
+        spinner: $('.loader')
     };
 
-    /*****************************************************************************
-     *
-     * Methods to update/refresh the UI
-     *
-     ****************************************************************************/
+    app.clearContent = function () {
+        if (!app.isLoading) {
+            app.content.html("").addClass("hide");
+            app.isLoading = true;
+            app.spinner.removeClass("hide");
+        }
+    }
 
-    // Updates content app
+    app.getUrl = function (url) {
+        app.clearContent();
+        app.file = url === HOME || url + "/" === HOME ? "index" : url.replace(HOME, "");
+
+        history.pushState(null, null, url);
+        app.getRequestData(url, 'view');
+    }
+
+    app.getRequestData = function (url, folder) {
+        get(app.lib, folder + "/" + app.file, function (g) {
+            app.updateContent(g);
+
+            if (folder === "view")
+                app.getRequestData(url.replace('/view/', '/dobra/'), 'dobra');
+        });
+    };
+
+    // Updates content app, gerencia motor de templates
     app.updateContent = function (data) {
         if ($.isArray(data) && (typeof (data.template) !== "undefined" || typeof (data[0].template) !== "undefined")) {
             if (typeof (data.template) !== "undefined") {
@@ -32,72 +49,11 @@
         }
 
         if (app.isLoading) {
-            app.spinner.setAttribute('hidden', true);
+            app.spinner.addClass('hide');
             app.content.removeClass('hide');
             app.isLoading = false;
         }
     };
-
-
-    /*****************************************************************************
-     *
-     * Methods for dealing with the model
-     *
-     ****************************************************************************/
-
-    app.getRequestData = function (url, folder, tipo, data) {
-        if ('caches' in window) {
-            /*
-             * Check if the service worker has already cached this data.
-             * If the service worker has the data, then display the cached
-             * data while the app fetches the latest data.
-             */
-            caches.match(url).then(function (response) {
-                if (response) {
-                    console.log(response);
-                    response.json().then(function updateFromCache(json) {
-                        app.updateContent(json);
-                    });
-                }
-            });
-        } else {
-            if (data)
-                app.updateContent(data);
-            else
-                app.updateContent(initialData);
-        }
-
-        var fileUp = (typeof (tipo) === "undefined" ? "view/" + app.file : "dobra/" + app.file);
-        get(app.lib, fileUp, function (g) {
-            app.updateContent(g);
-            db.set(app.lib + "-" + app.file + "-" + folder, {data: g});
-
-            if(typeof (tipo) === "undefined")
-                db.get(app.lib + "-" + app.file + "-" + 'dobra').then(val => checkCacheData(val, 'dobra', 1));
-        });
-    };
-
-    // TODO add startup code here
-    /************************************************************************
-     *
-     * Code required to start the app
-     *
-     * OBSERVAÇÃO: To simplify this codelab, we've used localStorage.
-     *   localStorage is a synchronous API and has serious performance
-     *   implications. It should not be used in production applications!
-     *   Instead, check out IDB (https://www.npmjs.com/package/idb) or
-     *   SimpleDB (https://gist.github.com/inexorabletash/c8069c042b734519680c)
-     ************************************************************************/
-
-    function checkCacheData(val, folder, tipo) {
-        if (val === undefined) {
-            app.getRequestData(app.lib + "-" + app.file + "-" + folder, folder, tipo);
-        } else {
-            app.getRequestData(val.url, folder, tipo, val.data);
-        }
-    }
-
-    db.get(app.lib + "-" + app.file + "-" + 'view').then(val => checkCacheData(val, 'view'));
 
     // TODO add service worker code here
     if ('serviceWorker' in navigator) {
@@ -107,4 +63,15 @@
                 console.log('Service Worker Registered');
             });
     }
+
+    $("a").off("click").on("click", function (e) {
+        e.preventDefault();
+        let url = $(this).attr("href");
+        if($(this).attr("data-lib"))
+            app.lib = $(this).attr("data-lib");
+
+        history.pushState(null, null, url);
+        app.getUrl(url);
+    });
+    app.getUrl(HOME);
 })();

@@ -68,7 +68,6 @@ class Link extends Route
                 $this->prepareDependencies($path);
         }
 
-        $this->param['js'] .= "<script src='" . HOME . "vendor/conn/link-control/assets/idb.js?v=" . VERSION . "' defer ></script>\n";
         $this->param['js'] .= "<script src='" . HOME . "vendor/conn/link-control/assets/app.js?v=" . VERSION . "' defer ></script>\n";
         if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js"))
             $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . $this->getMinify() . ".js?v=" . VERSION . "' defer ></script>\n";
