@@ -19,7 +19,6 @@
     }
     app.getUrl = function (url) {
         if (app.url === "" || app.url !== url) {
-            app.updateContentPosition();
             if (!app.isLoading) {
                 app.isLoading = !0;
                 app.spinner.removeClass("hide")
@@ -86,12 +85,6 @@
         }
     };
 
-    app.updateContentPosition = function() {
-        if ($(".header").css("position") === "fixed")
-            $("#content").css("margin-top", $(".header").height() + "px")
-    };
-
-
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register(HOME + 'service-worker.js').then(function () {
             console.log('Service Worker Registered')
@@ -103,5 +96,9 @@
         history.pushState(null, null, url);
         app.getUrl(url)
     });
+
+    if ($(".header").css("position") === "fixed")
+        $("#content").css("margin-top", $(".header").height() + "px")
+
     app.getUrl(HOME + app.content.attr("data-initial"));
 })()
