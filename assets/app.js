@@ -90,7 +90,8 @@
             console.log('Service Worker Registered')
         })
     }
-    $("a").off("click").on("click", function (e) {
+
+    $("body").off("click", "a").on("click", "a", function (e) {
         e.preventDefault();
         let url = $(this).attr("href");
         history.pushState(null, null, url);
