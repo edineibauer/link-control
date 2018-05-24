@@ -75,7 +75,7 @@
     </svg>
 </div>
 
-<section class="col" id="content" data-lib="{$lib}" data-file="{$file}" data-load="0"></section>
+<section class="col" id="content" data-initial="{$url}" data-load="0"></section>
 
 {$js}
 {if $analytics != ""}

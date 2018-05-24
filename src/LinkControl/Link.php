@@ -23,14 +23,14 @@ class Link extends Route
 
     function __construct()
     {
+        $url = strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT)));
         $this->devLibrary = "http://dev.ontab.com.br";
         $this->param = ["title" => SITENAME, "version" => VERSION, "meta" => "", "css" => "", "js" => "", "font" => "", "analytics" => defined("ANALYTICS") ? ANALYTICS : ""];
-        $this->url = explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT))));
+        $this->url = explode('/', $url);
         parent::checkRoute(!empty($this->url[0]) ? $this->url[0] : 'index', $this->url[1] ?? null);
         $this->checkParamPage();
         new Sessao();
-        $this->param["lib"] = parent::getLib();
-        $this->param["file"] = parent::getFile();
+        $this->param["url"] = $url;
         $this->param['loged'] = !empty($_SESSION['userlogin']);
     }
 
