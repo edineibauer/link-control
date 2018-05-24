@@ -94,7 +94,6 @@
     $("body").off("click", "a").on("click", "a", function (e) {
         e.preventDefault();
         let url = $(this).attr("href");
-        history.pushState(null, null, url);
         app.getUrl(url)
     });
 
