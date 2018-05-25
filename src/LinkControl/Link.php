@@ -71,6 +71,20 @@ class Link extends Route
             $this->param['title'] = $this->prepareTitle($f['title']);
 
         if (parent::getLib()) {
+            if(file_exists(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets")) {
+                foreach(Helper::listFolder(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets") as $assets) {
+                    if (!preg_match('/\.min\.(css|js)/i', $assets) && preg_match('/\.(css|js)/i', $assets) && !file_exists(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/" . str_replace(['.css', '.js'], ['.min.css', '.min.js'], $assets))) {
+                        $extensao = pathinfo(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/{$assets}", PATHINFO_EXTENSION);
+                        if($extensao === 'js')
+                            $mini = Minify\JS(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/{$assets}");
+                        else
+                            $mini = Minify\CSS(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/{$assets}");
+
+                        $mini->minify(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/" . str_replace(['.css', '.js'], ['.min.css', '.min.js'], $assets));
+                    }
+                }
+            }
+
             $path = PATH_HOME . (!DEV || parent::getLib() !== DOMINIO ? "vendor/conn/" . parent::getLib() . "/" : "") . "param/" . parent::getFile() . ".json";
             if (file_exists($path))
                 $this->prepareDependencies($path);
