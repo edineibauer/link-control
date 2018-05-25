@@ -63,24 +63,8 @@ class Link extends Route
         $this->checkDicionarioContent();
 
         $f = json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true);
-
-        $minifier = new Minify\JS( HOME . "vendor/conn/link-control/assets/app.min.js");
-        foreach ($f['js'] as $js)
-            $minifier->add(HOME . $this->checkAssetsExist($js, 'js'));
-
-        $minifier->gzip(PATH_HOME . "assets/linkControl.js");
-        $minifier->minify(PATH_HOME . "assets/linkControl.min.js");
-        $this->param['js'] .= "<script src='" . HOME . "assets/linkControl.min.js?v=" . VERSION . "' defer ></script>\n";
-
-        $minifier = new Minify\CSS( HOME . "vendor/conn/link-control/assets/app.min.css");
-        $minifier->setMaxImportSize(10);
-        foreach ($f['css'] as $i => $css)
-                $minifier->add(HOME . $this->checkAssetsExist($css, 'css'));
-
-        $minifier->gzip(PATH_HOME . "assets/linkControl.css");
-        $minifier->minify(PATH_HOME . "assets/linkControl.min.css");
-        $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . "assets/linkControl.min.css?v=" . VERSION . "' >\n";
-
+        $this->param['js'] .= $this->minimizeJS($f['js']);
+        $this->param['css'] .= $this->minimizeCSS($f['css']);
         $this->param['font'] .= (!empty($f['icon']) ? $this->prepareIcon($f['icon']) : "") . (!empty($f['font']) ? $this->prepareFont($f['font']) : null);
         $this->param['meta'] .= $this->prepareMeta($f['meta'] ?? null);
         if ($f['title'])
@@ -100,6 +84,46 @@ class Link extends Route
                 $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".min.css?v=" . VERSION . "'>\n";
         }
     }
+
+    /**
+     * Minimiza lista de Javascript files em um arquivo único
+     *
+     * @param array $jsList
+     * @param string $name
+     * @return string
+     */
+    private function minimizeJS(array $jsList, string $name = "linkControl"): string
+    {
+        $minifier = new Minify\JS( HOME . "vendor/conn/link-control/assets/app.min.js");
+        foreach ($jsList as $js)
+            $minifier->add(HOME . $this->checkAssetsExist($js, 'js'));
+
+        $assets = "assets" . (DEV ? "Public" : "");
+        $minifier->gzip(PATH_HOME . $assets . "/{$name}.js");
+        $minifier->minify(PATH_HOME . $assets . "/{$name}.min.js");
+        return "<script src='" . HOME . $assets . "/{$name}.min.js?v=" . VERSION . "' defer ></script>\n";
+    }
+
+    /**
+     * Minimiza lista de Styles files em um arquivo único
+     *
+     * @param array $cssList
+     * @param string $name
+     * @return string
+     */
+    private function minimizeCSS(array $cssList, string $name = "linkControl"): string
+    {
+        $minifier = new Minify\CSS( HOME . "vendor/conn/link-control/assets/app.min.css");
+        $minifier->setMaxImportSize(30);
+        foreach ($cssList as $css)
+            $minifier->add(HOME . $this->checkAssetsExist($css, 'css'));
+
+        $assets = "assets" . (DEV ? "Public" : "");
+        $minifier->gzip(PATH_HOME . $assets . "/{$name}.css");
+        $minifier->minify(PATH_HOME . $assets . "/{$name}.min.css");
+        return "<link rel='stylesheet' href='" . HOME . $assets . "/{$name}.min.css?v=" . VERSION . "' >\n";
+    }
+
 
     /**
      * @param string $file
@@ -136,9 +160,6 @@ class Link extends Route
     private function checkDicionarioContent()
     {
         if (!empty($this->url[1])) {
-            $entity = "";
-            $name = "";
-
             list($entity, $name) = $this->checkEntityExist($this->url[0], $this->url[1]);
 
             if (empty($entity) && preg_match('/s$/i', $this->url[0]))
