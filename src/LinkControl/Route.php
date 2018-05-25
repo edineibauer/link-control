@@ -129,7 +129,7 @@ class Route
     /**
      * @return array
      */
-    private function getRouteFile()
+    private function getRouteFile(): array
     {
         return json_decode(file_get_contents(PATH_HOME . "_config/route.json"), true);
     }
