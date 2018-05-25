@@ -1,5 +1,0 @@
-<h3 class="col align-center {{class}}" {{attr}} {{#id}}id="{{id}}"{{/id}}>
-    {{#content}}
-        {{{.}}}
-    {{/content}}
-</h3>
