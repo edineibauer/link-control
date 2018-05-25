@@ -11,14 +11,14 @@ namespace LinkControl;
 
 use ConnCrud\Read;
 use EntityForm\Dicionario;
-use Helpers\Check;
 use Helpers\Helper;
+use MatthiasMullie\Minify;
+
 
 class Link extends Route
 {
     private $url;
     private $param;
-    private $library;
     private $dicionario;
 
     function __construct()
@@ -61,7 +61,30 @@ class Link extends Route
     private function checkParamPage()
     {
         $this->checkDicionarioContent();
-        $this->prepareDependencies(PATH_HOME . "_config/param.json");
+
+        $f = json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true);
+
+        $minifier = new Minify\JS( HOME . "vendor/conn/link-control/assets/app.min.js");
+        foreach ($f['js'] as $js)
+            $minifier->add(HOME . $this->checkAssetsExist($js, 'js'));
+
+        $minifier->gzip(PATH_HOME . "assets/linkControl.js");
+        $minifier->minify(PATH_HOME . "assets/linkControl.min.js");
+        $this->param['js'] .= "<script src='" . HOME . "assets/linkControl.min.js?v=" . VERSION . "' defer ></script>\n";
+
+        $minifier = new Minify\CSS( HOME . "vendor/conn/link-control/assets/app.min.css");
+        $minifier->setMaxImportSize(10);
+        foreach ($f['css'] as $i => $css)
+                $minifier->add(HOME . $this->checkAssetsExist($css, 'css'));
+
+        $minifier->gzip(PATH_HOME . "assets/linkControl.css");
+        $minifier->minify(PATH_HOME . "assets/linkControl.min.css");
+        $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . "assets/linkControl.min.css?v=" . VERSION . "' >\n";
+
+        $this->param['font'] .= (!empty($f['icon']) ? $this->prepareIcon($f['icon']) : "") . (!empty($f['font']) ? $this->prepareFont($f['font']) : null);
+        $this->param['meta'] .= $this->prepareMeta($f['meta'] ?? null);
+        if ($f['title'])
+            $this->param['title'] = $this->prepareTitle($f['title']);
 
         if (parent::getLib()) {
             $path = PATH_HOME . (!DEV || parent::getLib() !== DOMINIO ? "vendor/conn/" . parent::getLib() . "/" : "") . "param/" . parent::getFile() . ".json";
@@ -69,9 +92,7 @@ class Link extends Route
                 $this->prepareDependencies($path);
         }
 
-        $this->param['js'] .= "<script src='" . HOME . "vendor/conn/link-control/assets/app.min.js?v=" . VERSION . "' defer ></script>\n";
-
-        if(DEV) {
+        if (DEV) {
             if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".min.js"))
                 $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".min.js?v=" . VERSION . "' defer ></script>\n";
 
@@ -114,7 +135,7 @@ class Link extends Route
 
     private function checkDicionarioContent()
     {
-        if(!empty($this->url[1])) {
+        if (!empty($this->url[1])) {
             $entity = "";
             $name = "";
 
@@ -212,17 +233,35 @@ class Link extends Route
         return $return;
     }
 
-    private function getLinkDependency($library, $extensao)
+    /**
+     * Verifica se uma lib existe no sistema, se não existir, baixa do server
+     *
+     * @param string $lib
+     * @param string $extensao
+     * @return string
+     */
+    private function checkAssetsExist(string $lib, string $extensao): string
     {
-        $file = (DEV ? "assetsPublic" : "assets") . "/{$library}/{$library}" . ".min.{$extensao}";
+        $file = (DEV ? "assetsPublic" : "assets") . "/{$lib}/{$lib}" . ".min.{$extensao}";
         if (!file_exists($file)) {
             $this->createFolderAssetsLibraries($file);
-            if(Helper::isOnline("{$this->devLibrary}/{$library}/{$library}" . ".min.{$extensao}"))
-                copy("{$this->devLibrary}/{$library}/{$library}" . ".min.{$extensao}", PATH_HOME . $file);
-            elseif(Helper::isOnline("{$this->devLibrary}/{$library}/{$library}" . ".{$extensao}"))
-                copy("{$this->devLibrary}/{$library}/{$library}" . ".{$extensao}", PATH_HOME . $file);
+            if (!Helper::isOnline("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"))
+                return "";
+
+            if($extensao === 'js')
+                $mini = Minify\JS("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}");
+            else
+                $mini = Minify\CSS("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}");
+
+            $mini->minify(PATH_HOME . $file);
         }
 
+        return $file;
+    }
+
+    private function getLinkDependency($library, $extensao)
+    {
+        $file = $this->checkAssetsExist($library, $extensao);
         return $extensao === "js" ? "<script src='" . HOME . $file . "?v=" . VERSION . "' defer ></script>\n" : "<link rel='stylesheet' href='" . HOME . $file . "?v=" . VERSION . "'>\n";
     }
 
