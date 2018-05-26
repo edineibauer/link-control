@@ -76,9 +76,9 @@ class Link extends Route
                     if (!preg_match('/\.min\.(css|js)/i', $assets) && preg_match('/\.(css|js)/i', $assets) && !file_exists(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/" . str_replace(['.css', '.js'], ['.min.css', '.min.js'], $assets))) {
                         $extensao = pathinfo(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/{$assets}", PATHINFO_EXTENSION);
                         if($extensao === 'js')
-                            $mini = Minify\JS(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/{$assets}");
+                            $mini = new Minify\JS(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/{$assets}");
                         else
-                            $mini = Minify\CSS(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/{$assets}");
+                            $mini = new Minify\CSS(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/{$assets}");
 
                         $mini->minify(PATH_HOME . "vendor/conn/" . parent::getLib() . "/assets/" . str_replace(['.css', '.js'], ['.min.css', '.min.js'], $assets));
                     }
@@ -108,13 +108,16 @@ class Link extends Route
      */
     private function minimizeJS(array $jsList, string $name = "linkControl"): string
     {
-        $minifier = new Minify\JS( HOME . "vendor/conn/link-control/assets/app.min.js");
-        foreach ($jsList as $js)
-            $minifier->add(HOME . $this->checkAssetsExist($js, 'js'));
-
         $assets = "assets" . (DEV ? "Public" : "");
-        $minifier->gzip(PATH_HOME . $assets . "/{$name}.js");
-        $minifier->minify(PATH_HOME . $assets . "/{$name}.min.js");
+        if(!file_exists(PATH_HOME . $assets . "/{$name}.min.js")) {
+            $minifier = new Minify\JS("");
+            foreach ($jsList as $js)
+                $minifier->add(PATH_HOME . $this->checkAssetsExist($js, 'js'));
+
+            $minifier->add(PATH_HOME . "vendor/conn/link-control/assets/app.min.js");
+            //        $minifier->gzip(PATH_HOME . $assets . "/{$name}.js");
+            $minifier->minify(PATH_HOME . $assets . "/{$name}.min.js");
+        }
         return "<script src='" . HOME . $assets . "/{$name}.min.js?v=" . VERSION . "' defer ></script>\n";
     }
 
@@ -127,14 +130,17 @@ class Link extends Route
      */
     private function minimizeCSS(array $cssList, string $name = "linkControl"): string
     {
-        $minifier = new Minify\CSS( HOME . "vendor/conn/link-control/assets/app.min.css");
-        $minifier->setMaxImportSize(30);
-        foreach ($cssList as $css)
-            $minifier->add(HOME . $this->checkAssetsExist($css, 'css'));
-
         $assets = "assets" . (DEV ? "Public" : "");
-        $minifier->gzip(PATH_HOME . $assets . "/{$name}.css");
-        $minifier->minify(PATH_HOME . $assets . "/{$name}.min.css");
+        if(!file_exists(PATH_HOME . $assets . "/{$name}.min.css")) {
+            $minifier = new Minify\CSS("");
+            $minifier->setMaxImportSize(30);
+            foreach ($cssList as $css)
+                $minifier->add(PATH_HOME . $this->checkAssetsExist($css, 'css'));
+
+            $minifier->add(PATH_HOME . "vendor/conn/link-control/assets/app.min.css");
+            //        $minifier->gzip(PATH_HOME . $assets . "/{$name}.css");
+            $minifier->minify(PATH_HOME . $assets . "/{$name}.min.css");
+        }
         return "<link rel='stylesheet' href='" . HOME . $assets . "/{$name}.min.css?v=" . VERSION . "' >\n";
     }
 
@@ -284,9 +290,9 @@ class Link extends Route
                 return "";
 
             if($extensao === 'js')
-                $mini = Minify\JS("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}");
+                $mini = new Minify\JS(file_get_contents("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"));
             else
-                $mini = Minify\CSS("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}");
+                $mini = new Minify\CSS(file_get_contents("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"));
 
             $mini->minify(PATH_HOME . $file);
         }
