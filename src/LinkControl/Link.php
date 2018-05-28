@@ -65,7 +65,7 @@ class Link extends Route
         $f = json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true);
         $this->param['js'] .= $this->minimizeJS($f['js']);
         $this->param['css'] .= $this->minimizeCSS($f['css']);
-        $this->param['font'] .= (!empty($f['icon']) ? $this->prepareIcon($f['icon']) : "") . (!empty($f['font']) ? $this->prepareFont($f['font']) : null);
+        $this->param['font'] .= (!empty($f['icon']) && !empty($f['font']) ? $this->prepareFont($f['font'], $f['icon']) : (!empty($f['font']) ? $this->prepareFont($f['font']) : (!empty($f['icon']) ? $this->prepareFont(null, $f['icon']) : "")));
         $this->param['meta'] .= $this->prepareMeta($f['meta'] ?? null);
         if ($f['title'])
             $this->param['title'] = $this->prepareTitle($f['title']);
@@ -244,22 +244,69 @@ class Link extends Route
         return $return;
     }
 
-    private function prepareIcon(array $param): string
+    /**
+     * @param string $item
+     * @param string $tipo
+     * @return string
+     */
+    private function getFontIcon(string $item, string $tipo): string
     {
-        $return = "";
-        foreach ($param as $item) {
-            $return .= "<link rel='stylesheet' href='https://fonts.googleapis.com/icon?family=" . ucfirst($item) . "+Icons' type='text/css' media='all'/>";
+        $data = "";
+        $assets = (DEV ? "assetsPublic/" : "assets/");
+        $urlOnline = $tipo === "font" ? "https://fonts.googleapis.com/css?family=" . ucfirst($item) . ":100,300,400,700" : "https://fonts.googleapis.com/icon?family=" . ucfirst($item) . "+Icons";
+        if (Helper::isOnline($urlOnline)) {
+            $data = file_get_contents($urlOnline);
+            foreach (explode('url(', $data) as $i => $u) {
+                if ($i > 0) {
+                    $url = explode(')', $u)[0];
+                    if (!file_exists(PATH_HOME . $assets . "fonts/" . pathinfo($url, PATHINFO_BASENAME))) {
+                        if (Helper::isOnline($url)) {
+                            Helper::createFolderIfNoExist(PATH_HOME . $assets . "fonts");
+                            $f = fopen(PATH_HOME . $assets . "fonts/" . pathinfo($url, PATHINFO_BASENAME), "w+");
+                            fwrite($f, file_get_contents($url));
+                            fclose($f);
+                            $data = str_replace($url, HOME . $assets . "fonts/" . pathinfo($url, PATHINFO_BASENAME), $data);
+                        } else {
+                            $before = "@font-face" . explode("@font-face", $u[$i - 1])[1] . "url(";
+                            $after = explode("}", $u)[0];
+                            $data = str_replace($before . $after, "", $data);
+                        }
+                    } else {
+                        $data = str_replace($url, HOME . $assets . "fonts/" . pathinfo($url, PATHINFO_BASENAME), $data);
+                    }
+                }
+            }
         }
-        return $return;
+        return $data;
     }
 
-    private function prepareFont(array $param): string
+    /**
+     * @param mixed $fontList
+     * @param mixed $iconList
+     * @return string
+     */
+    private function prepareFont($fontList, $iconList = null): string
     {
-        $return = "";
-        foreach ($param as $item) {
-            $return .= "<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=" . ucfirst($item) . ":100,300,400,700' type='text/css' media='all'/>";
+        $assets = (DEV ? "assetsPublic/" : "assets/");
+        $path = $assets . "fonts.min.css";
+        $fonts = "";
+
+        if(!file_exists(PATH_HOME . $path)) {
+            if ($fontList) {
+                foreach ($fontList as $item)
+                    $fonts .= $this->getFontIcon($item, "font");
+            }
+
+            if ($iconList) {
+                foreach ($iconList as $item)
+                    $fonts .= $this->getFontIcon($item, "icon");
+            }
+
+            $m = new Minify\CSS($fonts);
+            $m->minify(PATH_HOME . $path);
         }
-        return $return;
+
+        return "<link rel='stylesheet' href='" . HOME . $path . "' type='text/css' media='all'/>";
     }
 
     private function prepareMeta($param = null)
@@ -316,14 +363,5 @@ class Link extends Route
                 Helper::createFolderIfNoExist($link);
             }
         }
-    }
-
-    /**
-     * Retorna o Assets para produçao ou Desenvolvimento
-     * @return string
-     */
-    private function getAssets(): string
-    {
-        return DEV ? "assetsPublic" : "assets";
     }
 }
