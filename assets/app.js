@@ -32,6 +32,22 @@
             app.reloadUrl(url)
         }
     }
+
+
+    app.getDobra = function(folder, g) {
+        if (folder === "view") {
+            if (app.isLoading) {
+                app.spinner.addClass('hide');
+                app.isLoading = !1
+            }
+            $("title").text(g.title);
+            app.lib = g.lib;
+            app.loadStyleUrl(g.path);
+            app.loadScriptUrl(g.path);
+            app.getRequestData('dobra');
+        }
+    }
+
     app.getRequestData = function (folder) {
         get(folder + "/" + app.file, function (g) {
             if (g) {
@@ -84,21 +100,17 @@
             }
         }
     };
-
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register(HOME + 'service-worker.js').then(function () {
             console.log('Service Worker Registered')
         })
     }
-
     $("body").off("click", "a").on("click", "a", function (e) {
         e.preventDefault();
         let url = $(this).attr("href");
         app.getUrl(url)
     });
-
     if ($(".header").css("position") === "fixed")
         $("#content").css("margin-top", $(".header").height() + "px")
-
-    app.getUrl(HOME + app.content.attr("data-initial"));
+    app.getUrl(HOME + app.content.attr("data-initial"))
 })()
