@@ -8,7 +8,7 @@ ob_start();
             <div class="col s12">
                 <br>
                 <div class="col s12">
-                    <img src="<?=HOME?>/vendor/conn/link-control/assets/dino.png">
+                    <img src="<?=HOME?>vendor/conn/link-control/assets/dino.png">
                 </div>
                 <div class="panel font-xlarge font-light padding-32">
                     Não há conexão com a Internet
