@@ -306,7 +306,7 @@ class Link extends Route
             $m->minify(PATH_HOME . $path);
         }
 
-        return "<link rel='stylesheet' href='" . HOME . $path . "' type='text/css' media='all'/>";
+        return "<link rel='stylesheet' href='" . HOME . $path . "?v=" . VERSION. "' type='text/css' media='all'/>";
     }
 
     private function prepareMeta($param = null)
