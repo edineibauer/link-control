@@ -107,7 +107,7 @@
         <ul class="col" id="applications"></ul>
         <ul class="col border-bottom padding-bottom" id="actions">
             <li class="col pointer color-hover-grey-light">
-                <a href="{$home}login" class="col padding-small padding-16">
+                <a href="{$home}dashboard" class="col padding-small padding-16">
                     <i class="material-icons left padding-right font-xlarge">notifications</i>
                     <span class="left padding-tiny">Notificações</span>
                 </a>
