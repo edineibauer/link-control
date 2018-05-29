@@ -32,6 +32,9 @@ class Link extends Route
         new Sessao();
         $this->param["url"] = $url;
         $this->param['loged'] = !empty($_SESSION['userlogin']);
+        $this->param['login'] = ($this->param['loged'] ? $_SESSION['userlogin'] : "");
+        $this->param['email'] = defined("EMAIL") && !empty(EMAIL) ? EMAIL : "contato@" . DOMINIO;
+        $this->param['menu'] = "";
     }
 
     /**

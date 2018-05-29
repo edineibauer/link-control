@@ -19,11 +19,16 @@
     {$meta}
     {$css}
     {$font}
-    <script>const HOME = '{$home}';const ISDEV = {$dev};const DOMINIO = '{$dominio}';const VERSION = {$version};</script>
+    <script>
+        const HOME = '{$home}';
+        const ISDEV = {$dev};
+        const DOMINIO = '{$dominio}';
+        const VERSION = {$version};
+    </script>
 </head>
 <body>
-<div class="col padding-medium theme z-depth-2 header relative" style="z-index: 99">
-    <div class="col {if $loged}container{else}container-1200{/if}">
+<div class="col padding-medium theme z-depth-2 header relative" style="z-index: 19">
+    <div class="col {if !$loged}container-1200{/if}">
         <header class="left padding-tiny header-logo">
             <a href="{$home}" class="left">
 
@@ -43,15 +48,21 @@
         <nav class="right padding-tiny" role="navigation">
             <ul class="right upper header-nav hide-medium hide-small">
                 <li class="left padding-0 padding-right col relative" style="width: 400px">
-                    <input type="text" placeholder="buscar.." class="col left font-large color-white margin-0 search padding-left radius" style="width: 400px">
-                    <button class="right btn-floating theme-d2 opacity hover-opacity-off" style="position:absolute;right: 0;margin: 0;height: 39px;border-radius: 3px;"><i class="material-icons">search</i></button>
+                    <input type="text" placeholder="buscar.."
+                           class="col left font-large color-white margin-0 search padding-left radius"
+                           style="width: 400px">
+                    <button class="right btn-floating theme-d2 opacity hover-opacity-off"
+                            style="position:absolute;right: 0;margin: 0;height: 39px;border-radius: 3px;"><i
+                                class="material-icons">search</i></button>
                 </li>
                 {if $loged}
                     <li class="left padding-0">
                         <a href="{$home}dashboard" class="right padding-medium">minha conta</a>
                     </li>
                     <li class="left padding-0 pointer">
-                        <span onclick="logoutDashboard()" class="right padding-medium opacity hover-opacity-off">SAIR</span>
+                        <span onclick="logoutDashboard()"
+                              class="right padding-medium opacity hover-opacity-off">SAIR
+                        </span>
                     </li>
                 {else}
                     <li class="left padding-0">
@@ -59,14 +70,71 @@
                     </li>
                 {/if}
             </ul>
-
-            <button class="open-menu hide-large right color-hover-theme font-large theme-l1" style="padding: 6px 15px 1px">
+            <span class="open-menu hide-large right hover-shadow pointer font-large btn-flat"
+                  style="padding: 6px 15px 1px">
                 <i class="material-icons">menu</i>
-            </button>
+            </span>
+
+            <span class="app-search btn-flat hide-large theme right hover-shadow pointer font-large"
+                  style="padding: 6px 15px 1px">
+                <i class="material-icons">search</i>
+            </span>
         </nav>
     </div>
 </div>
 
+<div class="col animate-left" id="app-sidebar">
+    <div class="col padding-medium theme color-grayscale-min" id="main-header-app-sidebar">
+        <div class="col padding-medium perfil-sidebar">
+            {if $loged}
+                <img src="{$home}image/{$login.imagem}&h=100&w=100" height="80" width="80"
+                     class="radius-circle margin-bottom z-depth-2">
+                <div class="col font-large font-bold">
+                    {$login.nome}
+                </div>
+                <div class="col font-medium font-light">{$login.email}</div>
+            {else}
+                <i class="material-icons font-jumbo margin-bottom">people</i>
+                <div class="col font-large font-bold">
+                    Anônimo
+                </div>
+                <div class="col font-medium font-light">{$email}</div>
+            {/if}
+        </div>
+    </div>
+
+    <div class="col" id="main-app-sidebar">
+        <ul class="col" id="applications"></ul>
+        <ul class="col border-bottom padding-bottom" id="actions">
+            <li class="col pointer color-hover-grey-light">
+                <a href="{$home}login" class="col padding-small padding-16">
+                    <i class="material-icons left padding-right font-xlarge">notifications</i>
+                    <span class="left padding-tiny">Notificações</span>
+                </a>
+            </li>
+        </ul>
+
+        <ul class="col" id="menu">
+            {$menu}
+            {if $loged}
+                <li class="col pointer color-hover-grey-light">
+                    <a href="{$home}dashboard" class="col padding-large opacity hover-opacity-off">
+                        Minha Conta
+                    </a>
+                </li>
+                <li class="col pointer color-hover-grey-light">
+                    <span onclick="logoutDashboard()" class="col padding-large opacity hover-opacity-off">
+                        sair
+                    </span>
+                </li>
+            {else}
+                <li class="col pointer color-hover-grey-light">
+                    <a href="{$home}login" class="col padding-large">login</a>
+                </li>
+            {/if}
+        </ul>
+    </div>
+</div>
 
 <div class="overlay hide-large animate-opacity" id="myOverlay"></div>
 
