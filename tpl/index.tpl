@@ -46,9 +46,6 @@
                     <input type="text" placeholder="buscar.." class="col left font-large color-white margin-0 search padding-left radius" style="width: 400px">
                     <button class="right btn-floating theme-d2 opacity hover-opacity-off" style="position:absolute;right: 0;margin: 0;height: 39px;border-radius: 3px;"><i class="material-icons">search</i></button>
                 </li>
-                <li class="left padding-0 padding-left">
-                    <a href="{$home}sobre" class="right padding-medium">sobre</a>
-                </li>
                 {if $loged}
                     <li class="left padding-0">
                         <a href="{$home}dashboard" class="right padding-medium">minha conta</a>
@@ -79,7 +76,7 @@
     </svg>
 </div>
 
-<section class="col" id="content" data-initial="{$url}" data-load="0"></section>
+<section class="col space-header" id="content" data-initial="{$url}" data-load="0"></section>
 
 {$js}
 {if $analytics != ""}
