@@ -32,6 +32,9 @@
                          title="{$sitename} {($sitesub != "") ? " - $sitesub" : ""}" class="col" height="39"
                          style="height: 39px;width: auto">
                     <h1 class="padding-0" style="font-size:0">{$sitename}</h1>
+                {elseif $favicon}
+                    <img src="{$favicon}" class="left padding-right" height="35" style="height: 35px">
+                    <h1 class="font-xlarge padding-0 left">{$sitename}</h1>
                 {else}
                     <h1 class="font-xlarge padding-0">{$sitename}</h1>
                 {/if}
