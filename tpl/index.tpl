@@ -50,7 +50,7 @@
                     <li class="left padding-0">
                         <a href="{$home}dashboard" class="right padding-medium">minha conta</a>
                     </li>
-                    <li class="left padding-0">
+                    <li class="left padding-0 pointer">
                         <span onclick="logoutDashboard()" class="right padding-medium opacity hover-opacity-off">SAIR</span>
                     </li>
                 {else}
