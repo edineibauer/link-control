@@ -114,8 +114,6 @@ class Link extends Route
             foreach ($jsList as $js)
                 $minifier->add(PATH_HOME . $this->checkAssetsExist($js, 'js'));
 
-            $minifier->add(PATH_HOME . "vendor/conn/link-control/assets/app.min.js");
-            //        $minifier->gzip(PATH_HOME . $assets . "/{$name}.js");
             $minifier->minify(PATH_HOME . $assets . "/{$name}.min.js");
         }
         return "<script src='" . HOME . $assets . "/{$name}.min.js?v=" . VERSION . "' defer ></script>\n";
@@ -137,8 +135,6 @@ class Link extends Route
             foreach ($cssList as $css)
                 $minifier->add(PATH_HOME . $this->checkAssetsExist($css, 'css'));
 
-            $minifier->add(PATH_HOME . "vendor/conn/link-control/assets/app.min.css");
-            //        $minifier->gzip(PATH_HOME . $assets . "/{$name}.css");
             $minifier->minify(PATH_HOME . $assets . "/{$name}.min.css");
         }
         return "<link rel='stylesheet' href='" . HOME . $assets . "/{$name}.min.css?v=" . VERSION . "' >\n";
