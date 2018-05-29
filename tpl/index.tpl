@@ -23,35 +23,36 @@
 </head>
 <body>
 <div class="col padding-medium theme z-depth-2 header relative" style="z-index: 99">
-    <div class="col container-1200">
-        <header href="{$home}" class="left padding-tiny header-logo">
+    <div class="col {if $loged}container{else}container-1200{/if}">
+        <header class="left padding-tiny header-logo">
             <a href="{$home}" class="left">
-                {if $logo != ""}
+
+                {if $logo != "" && $logo != $home}
                     <img src="{$logo}" alt="logo do site {$sitename}"
                          title="{$sitename} {($sitesub != "") ? " - $sitesub" : ""}" class="col" height="39"
                          style="height: 39px;width: auto">
                     <h1 class="padding-0" style="font-size:0">{$sitename}</h1>
                 {else}
-                    <h1>{$sitename}</h1>
+                    <h1 class="font-xlarge padding-0">{$sitename}</h1>
                 {/if}
             </a>
         </header>
         <nav class="right padding-tiny" role="navigation">
             <ul class="right upper header-nav hide-medium hide-small">
-                <li class="left padding-0 padding-right">
-                    <a href="{$home}sobre" class="right padding-medium">sobre nós</a>
+                <li class="left padding-0 padding-right col relative" style="width: 400px">
+                    <input type="text" placeholder="buscar.." class="col left font-large color-white margin-0 search padding-left radius" style="width: 400px">
+                    <button class="right btn-floating theme-d2 opacity hover-opacity-off" style="position:absolute;right: 0;margin: 0;height: 39px;border-radius: 3px;"><i class="material-icons">search</i></button>
                 </li>
-                <li class="left padding-0 padding-right">
-                    <a href="{$home}nossos-servicos" class="right padding-medium">nossos serviços</a>
-                </li>
-                <li class="left padding-0 padding-right">
-                    <a href="{$home}atendimento" class="right padding-medium">atendimento</a>
+                <li class="left padding-0 padding-left">
+                    <a href="{$home}sobre" class="right padding-medium">sobre</a>
                 </li>
                 {if $loged}
-                    <button onclick="logoutDashboard();"
-                            class="logout-button right color-white opacity hover-shadow margin-0 hover-opacity-off btn-floating">
-                        <i class="material-icons color-hover-text-red" style="font-size:0.9em">power_settings_new</i>
-                    </button>
+                    <li class="left padding-0">
+                        <a href="{$home}dashboard" class="right padding-medium">minha conta</a>
+                    </li>
+                    <li class="left padding-0">
+                        <a href="{$home}logout" class="right padding-medium opacity hover-opacity-off">SAIR</a>
+                    </li>
                 {else}
                     <li class="left padding-0">
                         <a href="{$home}login" class="right padding-medium">login</a>
