@@ -25,6 +25,7 @@
         const DOMINIO = '{$dominio}';
         const VERSION = {$version};
     </script>
+    {$js}
 </head>
 <body>
 <div class="col padding-medium theme z-depth-2 header relative" style="z-index: 19">
@@ -146,7 +147,6 @@
 
 <section class="col space-header" id="content" data-initial="{$url}" data-load="0"></section>
 
-{$js}
 {if $analytics != ""}
     <script async src="https://www.googletagmanager.com/gtag/js?id={$analytics}"></script>
     <script>
