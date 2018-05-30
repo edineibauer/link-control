@@ -330,18 +330,8 @@ class Link extends Route
     private function checkAssetsExist(string $lib, string $extensao): string
     {
         $file = (DEV ? "assetsPublic" : "assets") . "/{$lib}/{$lib}" . ".min.{$extensao}";
-        if (!file_exists($file)) {
-            $this->createFolderAssetsLibraries($file);
-            if (!Helper::isOnline("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"))
-                return "";
-
-            if($extensao === 'js')
-                $mini = new Minify\JS(file_get_contents("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"));
-            else
-                $mini = new Minify\CSS(file_get_contents("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"));
-
-            $mini->minify(PATH_HOME . $file);
-        }
+        if (!file_exists($file))
+            return "";
 
         return $file;
     }
