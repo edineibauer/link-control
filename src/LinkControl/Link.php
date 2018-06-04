@@ -80,11 +80,11 @@ class Link extends Route
         }
 
         if (DEV) {
-            if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".min.js"))
-                $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".min.js?v=" . VERSION . "' defer ></script>\n";
+            if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".js"))
+                $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".js?v=" . VERSION . "' defer ></script>\n";
 
-            if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".min.css"))
-                $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".min.css?v=" . VERSION . "'>\n";
+            if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".css"))
+                $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".css?v=" . VERSION . "'>\n";
         }
     }
 
