@@ -48,14 +48,14 @@
         </header>
         <nav class="right padding-tiny" role="navigation">
             <ul class="right upper header-nav hide-medium hide-small">
-                <li class="left padding-0 padding-right col relative" style="width: 400px">
+               {* <li class="left padding-0 padding-right col relative" style="width: 400px">
                     <input type="text" placeholder="buscar.."
                            class="col left font-large color-white margin-0 search padding-left radius"
                            style="width: 400px">
                     <button class="right btn-floating theme-d2 opacity hover-opacity-off"
                             style="position:absolute;right: 0;margin: 0;height: 39px;border-radius: 3px;"><i
                                 class="material-icons">search</i></button>
-                </li>
+                </li>*}
                 {if $loged}
                     <li class="left padding-0">
                         <a href="{$home}dashboard" class="right padding-medium">minha conta</a>
@@ -76,10 +76,10 @@
                 <i class="material-icons">menu</i>
             </span>
 
-            <span class="app-search btn-flat hide-large theme right hover-shadow pointer font-large"
+            {*<span class="app-search btn-flat hide-large theme right hover-shadow pointer font-large"
                   style="padding: 6px 15px 1px">
                 <i class="material-icons">search</i>
-            </span>
+            </span>*}
         </nav>
     </div>
 </div>
