@@ -48,14 +48,14 @@
         </header>
         <nav class="right padding-tiny" role="navigation">
             <ul class="right upper header-nav hide-medium hide-small">
-               {* <li class="left padding-0 padding-right col relative" style="width: 400px">
-                    <input type="text" placeholder="buscar.."
-                           class="col left font-large color-white margin-0 search padding-left radius"
-                           style="width: 400px">
-                    <button class="right btn-floating theme-d2 opacity hover-opacity-off"
-                            style="position:absolute;right: 0;margin: 0;height: 39px;border-radius: 3px;"><i
-                                class="material-icons">search</i></button>
-                </li>*}
+                {* <li class="left padding-0 padding-right col relative" style="width: 400px">
+                     <input type="text" placeholder="buscar.."
+                            class="col left font-large color-white margin-0 search padding-left radius"
+                            style="width: 400px">
+                     <button class="right btn-floating theme-d2 opacity hover-opacity-off"
+                             style="position:absolute;right: 0;margin: 0;height: 39px;border-radius: 3px;"><i
+                                 class="material-icons">search</i></button>
+                 </li>*}
                 {if $loged}
                     <li class="left padding-0">
                         <a href="{$home}dashboard" class="right padding-medium">minha conta</a>
@@ -88,12 +88,25 @@
     <div class="col padding-medium theme color-grayscale-min" id="main-header-app-sidebar">
         <div class="col padding-medium perfil-sidebar">
             {if $loged}
-                <img src="{$home}image/{$login.imagem}&h=100&w=100" height="80" width="80"
-                     class="radius-circle margin-bottom z-depth-2">
+                {if $login.imagem}
+                    <img src="{$home}image/{$login.imagem}&h=100&w=100" height="80" width="80"
+                         class="radius-circle margin-bottom z-depth-2">
+                {else}
+                    <div class="col s4"><i class="material-icons font-jumbo">people</i></div>
+                {/if}
                 <div class="col font-large font-bold">
                     {$login.nome}
                 </div>
-                <div class="col font-medium font-light">{$login.email}</div>
+                <div class="col font-medium font-light">
+                    <span class="left">
+                        {$login.email}
+                    </span>
+                    <button id="btn-editLogin" style="margin-top: -13px"
+                            class="right color-white opacity z-depth-0 border hover-opacity-off radius padding-small color-grey-light">
+                        <i class="material-icons left font-large">edit</i>
+                        <span class="left" style="padding-right: 5px">perfil</span>
+                    </button>
+                </div>
             {else}
                 <i class="material-icons font-jumbo margin-bottom">people</i>
                 <div class="col font-large font-bold">
@@ -106,16 +119,16 @@
 
     <div class="col" id="main-app-sidebar">
         <ul class="col" id="applications"></ul>
-        <ul class="col border-bottom padding-bottom" id="actions">
-            <li class="col pointer color-hover-grey-light">
-                <a href="{$home}dashboard" class="col padding-small padding-16">
-                    <i class="material-icons left padding-right font-xlarge">notifications</i>
-                    <span class="left padding-tiny">Notificações</span>
-                </a>
-            </li>
-        </ul>
+        {* <ul class="col border-bottom padding-bottom" id="actions">
+             <li class="col pointer color-hover-grey-light">
+                 <a href="{$home}dashboard" class="col padding-small padding-16">
+                     <i class="material-icons left padding-right font-xlarge">notifications</i>
+                     <span class="left padding-tiny">Notificações</span>
+                 </a>
+             </li>
+         </ul>*}
 
-        <ul class="col" id="menu">
+        <ul class="col border-top" id="menu">
             {$menu}
             {if $loged}
                 <li class="col pointer color-hover-grey-light">
