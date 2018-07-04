@@ -54,6 +54,7 @@ define("TPL_H6", "h6");
 
 //post
 define("TPL_POST_CARD", "post_card");
+define("TPL_POST_CARD_LIVRE", "post_card_livre");
 define("TPL_POST_FLAT", "post_flat");
 
 //files

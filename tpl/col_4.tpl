@@ -1,5 +1,5 @@
-<div class="col padding-64 {$class}" {$attr} {($id!=="")?'id="' + $id + '"':''}>
-    <div class="col container-900">
-        {$content}
-    </div>
+<div class="col {$class}" {$attr} {($id!=="")?'id="' + $id + '"':''}>
+    {foreach item=c from=$content}
+        <div class="col s12 m3 padding-small">{$c}</div>
+    {/foreach}
 </div>
