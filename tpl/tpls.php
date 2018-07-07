@@ -12,19 +12,24 @@ function template(string $template, $var = []): string
         "attr" => "",
         "content" => "",
         "contentClass" => "",
+        "contentStyle" => "",
         "background" => "",
         "height" => 300,
         "width" => "100%",
         "icon" => "send",
         "iconClass" => "send",
+        "iconStyle" => "send",
         "src" => "",
         "srcClass" => "",
+        "srcStyle" => "",
         "alt" => "",
         "title" => "",
         "titleClass" => "",
+        "titleStyle" => "",
         "href" => "",
         "hrefClass" => "",
-        "hrefText" => "saiba mais"
+        "hrefText" => "saiba mais",
+        "hrefStyle" => ""
     ];
     $tpl = new \Helpers\Template("link-control");
     return $tpl->getShow($template, array_merge($default, $var));
