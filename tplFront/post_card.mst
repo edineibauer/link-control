@@ -1,14 +1,23 @@
 <article class="col card color-white {{class}}" {{attr}} {{#id}}id="{{id}}"{{/id}}>
-    <header class="col display-container">
-        <img src="{{src}}" class="col {{srcClass}}" alt="{{alt}}" title="{{title}}" style="height: 250px">
+    <header class="col display-container"{{#click}} onclick="{{click}}"{{/click}}>
+        <img src="{{src}}" class="col {{srcClass}}" alt="{{alt}}" title="{{title}}" style="height: 250px;{{srcStyle}}">
         <h1 class="display-bottomleft padding-medium font-xlarge color-text-white text-shadow {{titleClass}}">{{title}}</h1>
     </header>
-    <div class="col padding-medium padding-24 font-light overflow-hidden margin-bottom {{contentClass}}" style="height: 109px">
+    <div class="col padding-medium padding-24 font-light overflow-hidden margin-bottom {{contentClass}}" style="height: 109px;{{contentStyle}}">
         {{{content}}}
     </div>
     {{#href}}
         <div class="col padding-medium">
-            <a class="btn hover-shadow upper theme-l2 opacity hover-opacity-off {{hrefClass}}" href="{{href}}">{{hrefText}}</a>
+            <a class="btn hover-shadow upper theme-l2 opacity hover-opacity-off {{hrefClass}}"
+               style="{{hrefStyle}}" href="{{href}}">{{hrefText}}</a>
         </div>
     {{/href}}
+    {{#click}}
+        <div class="col padding-medium">
+            <span class="btn hover-shadow upper theme-l2 opacity hover-opacity-off {{hrefClass}}"
+                  style="{{hrefStyle}}" onclick="{{click}}">
+            {{hrefText}}
+            </span>
+        </div>
+    {{/click}}
 </article>
