@@ -1,0 +1,3 @@
+<button class="btn font-xlarge theme-d1 content opacity hover-opacity-off hover-shadow  {{class}}" {{#attr}}{{{.}}} {{/attr}}{{#id}}id="{{id}}"{{/id}} style="{{#style}}{{{.}}}{{/style}}">
+    {{{text}}}
+</button>

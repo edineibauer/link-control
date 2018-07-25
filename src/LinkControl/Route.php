@@ -1,29 +1,45 @@
 <?php
 
 /**
- * Route.class [ MODEL ]
- * Valida endereços de urls solicitadas e direciona para seu caminho!
+ * Busca por arquivo a ser carregado em um request ao sistema Singular
  *
- * @copyright (c) 2017, Edinei J. Bauer
+ * @copyright (c) 2018, Edinei J. Bauer
  */
 
 namespace LinkControl;
 
 use Helpers\Helper;
+use Helpers\Check;
 
 class Route
 {
     private $route;
-    private $routes;
     private $lib;
     private $file;
+    private $var;
+
+    public function __construct()
+    {
+        if (Check::ajax())
+            $this->ajaxRequest();
+        else
+            $this->directAcces();
+    }
 
     /**
      * @return mixed
      */
-    public function getRoute(): string
+    public function getVar()
     {
-        return $this->route;
+        return $this->var;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRoute()
+    {
+        return $this->route ? PATH_HOME . $this->route : null;
     }
 
     /**
@@ -42,76 +58,77 @@ class Route
         return $this->file;
     }
 
-    public function checkRouteAjax($file, $lib = null)
+    /**
+     * Acesso via ajax
+     */
+    private function ajaxRequest()
     {
-        $this->file = $file;
-
-        if ($lib && (!DEV || (DEV && $lib !== DOMINIO)))
-            $this->libPatch($lib);
-        elseif (DEV)
-            $this->route = PATH_HOME . "ajax/{$this->file}.php";
-        else
-            $this->searchRouteAjax($lib);
-
-        if (!$this->route)
-            $this->show404();
+        $paths = array_filter(explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT)))));
+        $this->searchRoute($paths, 'view');
     }
 
     /**
-     * @param string $lib
+     * Acesso direto a um url
      */
-    private function libPatch(string $lib)
+    private function directAcces()
     {
-        if (file_exists(PATH_HOME . "vendor/conn/{$lib}/ajax/{$this->file}.php"))
-            $this->route = PATH_HOME . "vendor/conn/{$lib}/ajax/{$this->file}.php";
+        $paths = array_filter(explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT)))));
+        $this->searchRoute($paths, 'view');
     }
 
     /**
-     * @param string $lib
+     * @param string $dir
      */
-    private function searchRouteAjax(string $lib)
+    private function searchRoute(array $paths, string $dir = 'view')
     {
-        foreach (json_decode(file_get_contents(PATH_HOME . "_config/route.json"), true) as $libr) {
-            if (file_exists(PATH_HOME . "vendor/conn/{$libr}/ajax/{$this->file}.php")) {
-                $this->route = PATH_HOME . "vendor/conn/{$lib}/ajax/{$this->file}.php";
-                break;
+        if (count($paths) > 1) {
+            $this->var = array_pop($paths);
+            $this->file = array_pop($paths);
+            if (!empty($paths))
+                $path = implode('/', $paths) . '/' . $this->file;
+            else
+                $path = $this->file;
+        } else {
+            $this->file = $path = $paths[0] ?? "index";
+        }
+
+        if (!$this->route = $this->findRoute($path, $dir)) {
+            //busca rota, considerando var como caminho
+            if ($this->var) {
+                $path .= "/{$this->var}";
+                $this->file = $this->var;
+                $this->var = null;
+                $this->route = $this->findRoute($path, $dir);
+            }
+
+            if (!$this->route && !Check::ajax()) {
+                $this->file = $path = "404";
+                if (!$this->route = $this->findRoute($path, $dir)) {
+                    var_dump("Erro: Site não possúi arquivo 404 padrão. Crie o arquivo 'view/404.php'");
+                    die;
+                }
             }
         }
     }
 
-    protected function checkRoute($file, $content = null)
+    /**
+     * Busca por rota
+     *
+     * @param string $path
+     * @param string $dir
+     * @return null|string
+     */
+    private function findRoute(string $path, string $dir)
     {
-        $this->routes = $this->getRouteFile();
-
-        foreach ($this->routes as $this->lib) {
-            if ($this->route = $this->checkViewFile($file, $content))
-                return true;
+        //interno
+        if (file_exists(PATH_HOME . "{$dir}/{$path}.php")) {
+            $this->lib = defined('DOMINIO') ? DOMINIO : '';
+            return "{$dir}/{$path}.php";
         }
 
-        $this->show404();
-    }
-
-    /**
-     * Retorna o link de acesso para DESENVOLVIMENTO ou PRODUÇÃO
-     *
-     * @return string
-     */
-    protected function getDir() :string {
-        return !DEV || $this->lib !== DOMINIO ? "vendor/conn/{$this->lib}/" : "";
-    }
-
-    private function checkViewFile($file, $content = null)
-    {
-        $this->file = !empty($content) ? $content : $file;
-        $pathReturn = $this->getDir() . "ajax/view/" . ($content ? $file . "/" : "") . $this->file . ".php";
-
-        if (file_exists(PATH_HOME . $pathReturn))
-            return $pathReturn;
-
-        if($content){
-            $this->file = $file;
-            $pathReturn = $this->getDir() . "ajax/view/" .  $this->file . ".php";
-
+        //libs
+        foreach ($this->getRouteFile() as $this->lib) {
+            $pathReturn = VENDOR . "{$this->lib}/{$dir}/{$path}.php";
             if (file_exists(PATH_HOME . $pathReturn))
                 return $pathReturn;
         }
@@ -119,18 +136,12 @@ class Route
         return null;
     }
 
-    private function show404()
-    {
-        $this->file = "404";
-        $this->lib = "link-control";
-        $this->route = (DEV && DOMINIO === "link-control" ? "" : "vendor/conn/link-control/") . "ajax/view/404.php";
-    }
-
     /**
+     * Retorna rotas aceitas nas libs do vendor
      * @return array
      */
-    private function getRouteFile()
+    private function getRouteFile(): array
     {
-        return json_decode(file_get_contents(PATH_HOME . "_config/route.json"), true);
+        return file_exists(PATH_HOME . "_config/route.json") ? json_decode(file_get_contents(PATH_HOME . "_config/route.json"), true) : [];
     }
 }

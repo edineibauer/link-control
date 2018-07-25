@@ -1,5 +1,5 @@
-<ul class="col {{class}}" {{attr}} {{#id}}id="{{id}}"{{/id}}>
-    {{#content}}
+<ul class="col {{class}}" {{#attr}}{{{.}}} {{/attr}}{{#id}}id="{{id}}"{{/id}} style="{{#style}}{{{.}}}{{/style}}">
+    {{#text}}
         <li class='col'>{{{.}}}</li>
-    {{/content}}
+    {{/text}}
 </ul>

@@ -1,0 +1,1 @@
+<input type="text" class="rest font-xlarge {{class}}" {{#attr}}{{{.}}} {{/attr}}{{#id}}id="{{id}}"{{/id}} style="{{#style}}{{{.}}}{{/style}}">

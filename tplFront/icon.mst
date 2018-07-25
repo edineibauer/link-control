@@ -1,0 +1,1 @@
+<i class="material-icons left {{class}}" {{#attr}}{{{.}}} {{/attr}}{{#id}}id="{{id}}"{{/id}} style="{{#style}}{{{.}}}{{/style}}">>{{text}}</i>

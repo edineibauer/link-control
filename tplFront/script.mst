@@ -1,1 +1,1 @@
-<script src="{{src}}?v={{version}}" defer></script>
+<script src="{{src}}?v={{version}}" data-assets="singular-assets" defer></script>

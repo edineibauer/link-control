@@ -1,0 +1,5 @@
+<article class="col card color-white {{class}}" {{#attr}}{{{.}}} {{/attr}}{{#id}}id="{{id}}"{{/id}} style="{{#style}}{{{.}}}{{/style}}">
+    {{#text}}
+        {{{.}}}
+    {{/text}}
+</article>

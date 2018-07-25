@@ -1,0 +1,3 @@
+<div class="col padding-64 container-600 {{class}}" {{#attr}}{{{.}}} {{/attr}}{{#id}}id="{{id}}"{{/id}} style="{{#style}}{{{.}}}{{/style}}">
+    {{#text}}{{{.}}}{{/text}}
+</div>

@@ -24,6 +24,5 @@ ob_start();
     </div>
 </div>
 <?php
-$data['data']['title'] = "404 [não encontrado]";
-$data['data']['content'] = ob_get_contents();
+$data = ob_get_contents();
 ob_end_clean();

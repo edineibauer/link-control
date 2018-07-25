@@ -1,4 +1,5 @@
-<div class="col parallax {{class}}" {{attr}} {{#id}}id="{{id}}"{{/id}}
-     style="background-image: url('{{background}}');height:{{height}}px">
-    {{{content}}}
+<div class="col parallax {{class}}" {{#attr}}{{{.}}} {{/attr}}{{#id}}id="{{id}}"{{/id}} style="background-image:url('{{home}}uploads/site/background.png');{{#style}}{{{.}}}{{/style}}">
+    {{#text}}
+        {{{.}}}
+    {{/text}}
 </div>

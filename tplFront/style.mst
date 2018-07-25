@@ -1,1 +1,1 @@
-<link rel='stylesheet' href='{{href}}?v={{version}}'>
+<link rel='stylesheet' href='{{href}}?v={{version}}' data-assets="singular-assets">

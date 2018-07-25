@@ -1,10 +1,9 @@
 <?php
 
 /**
- * Link.class [ MODEL ]
  * Responável por gerenciar e fornecer informações sobre o link url!
  *
- * @copyright (c) 2017, Edinei J. Bauer
+ * @copyright (c) 2018, Edinei J. Bauer
  */
 
 namespace LinkControl;
@@ -14,23 +13,32 @@ use EntityForm\Dicionario;
 use Helpers\Helper;
 use MatthiasMullie\Minify;
 
-
-class Link extends Route
+class Link
 {
     private $url;
     private $param;
     private $dicionario;
 
-    function __construct()
+    /**
+     * Link constructor.
+     * @param string $lib
+     * @param string $file
+     * @param $var
+     */
+    function __construct(string $lib, string $file, $var = null)
     {
-        $url = strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT)));
         $this->devLibrary = "http://dev.ontab.com.br";
-        $this->param = ["title" => SITENAME, "version" => VERSION, "meta" => "", "css" => "", "js" => "", "font" => "", "analytics" => defined("ANALYTICS") ? ANALYTICS : ""];
-        $this->url = explode('/', $url);
-        parent::checkRoute(!empty($this->url[0]) ? $this->url[0] : 'index', $this->url[1] ?? null);
-        $this->checkParamPage();
-        new Sessao();
-        $this->param["url"] = $url;
+
+        $this->param = $this->getBaseParam($lib, $file);
+        if (empty($this->param['title']))
+            $this->param['title'] = $this->getTitle($lib, $file, $var);
+        else
+            $this->param['title'] = $this->prepareTitle($this->param['title'], $file);
+
+        $this->getParamCore();
+        $this->createMinFilesVendor();
+        $this->param["vendor"] = VENDOR;
+        $this->param["url"] = $file . (!empty($var) ? "/{$var}" : "");
         $this->param['loged'] = !empty($_SESSION['userlogin']);
         $this->param['login'] = ($this->param['loged'] ? $_SESSION['userlogin'] : "");
         $this->param['email'] = defined("EMAIL") && !empty(EMAIL) ? EMAIL : "contato@" . DOMINIO;
@@ -61,31 +69,85 @@ class Link extends Route
         return $this->param;
     }
 
-    private function checkParamPage()
+    private function createMinFilesVendor()
     {
-        $this->checkDicionarioContent();
+        foreach (Helper::listFolder(PATH_HOME . VENDOR) as $lib) {
+            foreach (Helper::listFolder(PATH_HOME . VENDOR . $lib . "/assets") as $file) {
+                $ext = pathinfo($file, PATHINFO_EXTENSION);
+                $name = pathinfo($file, PATHINFO_BASENAME);
+                if (preg_match('/(^\.min)\.[js|css]$/i', $file) && !file_exist(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}")) {
+                    if (preg_match('/\.js$/i', $file))
+                        $minifier = new Minify\JS(file_get_content(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
+                    else
+                        $minifier = new Minify\CSS(file_get_content(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
 
-        $f = json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true);
-        $this->param['js'] .= $this->minimizeJS($f['js']);
-        $this->param['css'] .= $this->minimizeCSS($f['css']);
-        $this->param['font'] .= (!empty($f['icon']) && !empty($f['font']) ? $this->prepareFont($f['font'], $f['icon']) : (!empty($f['font']) ? $this->prepareFont($f['font']) : (!empty($f['icon']) ? $this->prepareFont(null, $f['icon']) : "")));
-        $this->param['meta'] .= $this->prepareMeta($f['meta'] ?? null);
-        if ($f['title'])
-            $this->param['title'] = $this->prepareTitle($f['title']);
+                    $minifier->minify(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}");
+                }
+            }
+        }
+    }
 
-        if (parent::getLib()) {
-            $path = PATH_HOME . (!DEV || parent::getLib() !== DOMINIO ? "vendor/conn/" . parent::getLib() . "/" : "") . "param/" . parent::getFile() . ".json";
-            if (file_exists($path))
-                $this->prepareDependencies($path);
+    /**
+     * @param string $lib
+     * @param string $file
+     */
+    private function getBaseParam(string $lib, string $file)
+    {
+        $base = [
+            "version" => VERSION,
+            "meta" => "",
+            "css" => "",
+            "js" => "",
+            "font" => "",
+            "analytics" => defined("ANALYTICS") ? ANALYTICS : ""
+        ];
+
+        if (file_exists(PATH_HOME . ($lib === DOMINIO ? "" : VENDOR . "{$lib}/") . "param/{$file}.json"))
+            $base = array_merge($base, json_decode(file_get_contents(PATH_HOME . ($lib === DOMINIO ? "" : VENDOR . "{$lib}/") . "param/{$file}.json"), true));
+
+        return $base;
+    }
+
+    /**
+     * @param string $lib
+     * @param string $file
+     * @param null $var
+     * @return string
+     */
+    private function getTitle(string $lib, string $file, $var = null): string
+    {
+        $entity = str_replace("-", "_", $file);
+        if (file_exists(PATH_HOME . "entity/cache/{$entity}.json") && $var) {
+            $this->dicionario = new Dicionario($entity);
+            $where = "WHERE id = {$var}";
+            if ($linkId = $this->dicionario->getInfo()['link']) {
+                $where .= " || " . $this->dicionario->search($linkId)->getColumn() . " = '{$var}'";
+
+                $read = new Read();
+                $read->exeRead($entity, $where);
+                if ($read->getResult()) {
+                    return $read->getResult()[0][$this->dicionario->search($this->dicionario->getInfo()['title'])->getColumn()] . " | " . SITENAME;
+                }
+            }
         }
 
-        if (DEV) {
-            if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".js"))
-                $this->param['js'] .= "<script src='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".js?v=" . VERSION . "' defer ></script>\n";
+        return ($file === "index" ? SITENAME . (defined('SITESUB') && !empty(SITESUB) ? " | " . SITESUB : "") : ucwords(str_replace(['-', "_"], " ", $file)) . " | " . SITENAME);
+    }
 
-            if (file_exists(PATH_HOME . parent::getDir() . "assets/" . parent::getFile() . ".css"))
-                $this->param['css'] .= "<link rel='stylesheet' href='" . HOME . parent::getDir() . "assets/" . parent::getFile() . ".css?v=" . VERSION . "'>\n";
-        }
+    /**
+     * Obtém os parâmetros do Core da aplicação Singular
+     */
+    private function getParamCore()
+    {
+        $f = ['js' => $this->param['js'], 'css' => $this->param['css'], 'meta' => $this->param['meta'], 'font' => $this->param['font']];
+        unset($this->param['js'], $this->param['css'], $this->param['meta'], $this->param['font']);
+        if(file_exists(PATH_HOME . "_config/param.json"))
+            $f = array_merge($f, json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true));
+
+        $this->param['js'] = $this->minimizeJS($f['js']);
+        $this->param['css'] = $this->minimizeCSS($f['css']);
+        $this->param['font'] = (!empty($f['icon']) && !empty($f['font']) ? $this->prepareFont($f['font'], $f['icon']) : (!empty($f['font']) ? $this->prepareFont($f['font']) : (!empty($f['icon']) ? $this->prepareFont(null, $f['icon']) : "")));
+        $this->param['meta'] = $this->prepareMeta($f['meta'] ?? null);
     }
 
     /**
@@ -95,10 +157,10 @@ class Link extends Route
      * @param string $name
      * @return string
      */
-    private function minimizeJS(array $jsList, string $name = "linkControl"): string
+    private function minimizeJS(array $jsList, string $name = "core"): string
     {
         $assets = "assets" . (DEV ? "Public" : "");
-        if(!file_exists(PATH_HOME . $assets . "/{$name}.min.js")) {
+        if (!file_exists(PATH_HOME . $assets . "/{$name}.min.js")) {
             $minifier = new Minify\JS("");
             foreach ($jsList as $js)
                 $minifier->add(PATH_HOME . $this->checkAssetsExist($js, 'js'));
@@ -115,10 +177,10 @@ class Link extends Route
      * @param string $name
      * @return string
      */
-    private function minimizeCSS(array $cssList, string $name = "linkControl"): string
+    private function minimizeCSS(array $cssList, string $name = "core"): string
     {
         $assets = "assets" . (DEV ? "Public" : "");
-        if(!file_exists(PATH_HOME . $assets . "/{$name}.min.css")) {
+        if (!file_exists(PATH_HOME . $assets . "/{$name}.min.css")) {
             $minifier = new Minify\CSS("");
             $minifier->setMaxImportSize(30);
             foreach ($cssList as $css)
@@ -129,104 +191,32 @@ class Link extends Route
         return "<link rel='stylesheet' href='" . HOME . $assets . "/{$name}.min.css?v=" . VERSION . "' >\n";
     }
 
-
-    /**
-     * @param string $file
-     */
-    private function prepareDependencies(string $file)
-    {
-        $file = json_decode(file_get_contents($file), true);
-
-        if ($file['title'])
-            $this->param['title'] = $this->prepareTitle($file['title']);
-
-        $this->param['js'] .= !empty($file['js']) ? $this->prepareDependency($file['js'], 'js') : null;
-
-        if (!empty($file['css']))
-            $this->param['css'] .= $this->prepareDependency($file['css'], 'css');
-
-        $this->param['font'] .= (!empty($file['icon']) ? $this->prepareIcon($file['icon']) : "") . (!empty($file['font']) ? $this->prepareFont($file['font']) : null);
-        $this->param['meta'] .= $this->prepareMeta($file['meta'] ?? null);
-    }
-
-    /**
-     * @param string $entity
-     * @param string $name
-     * @return mixed
-     */
-    private function checkEntityExist(string $entity, string $name)
-    {
-        if (file_exists(PATH_HOME . "entity/cache/{$entity}.json") && !empty($name))
-            return [$entity, $name];
-
-        return [null, null];
-    }
-
-    private function checkDicionarioContent()
-    {
-        if (!empty($this->url[1])) {
-            list($entity, $name) = $this->checkEntityExist($this->url[0], $this->url[1]);
-
-            if (empty($entity) && preg_match('/s$/i', $this->url[0]))
-                list($entity, $name) = $this->checkEntityExist(substr($this->url[0], 0, -1), $this->url[1]);
-            elseif (empty($entity))
-                list($entity, $name) = $this->checkEntityExist($this->url[0] . "s", $this->url[1]);
-
-            if (empty($entity) && !empty($this->url[2])) {
-                list($entity, $name) = $this->checkEntityExist($this->url[1], $this->url[2]);
-
-                if (empty($entity) && preg_match('/s$/i', $this->url[1]))
-                    list($entity, $name) = $this->checkEntityExist(substr($this->url[1], 0, -1), $this->url[2]);
-                elseif (empty($entity))
-                    list($entity, $name) = $this->checkEntityExist($this->url[1] . "s", $this->url[2]);
-            }
-
-            if (!empty($entity) && !empty($name)) {
-                $read = new Read();
-                $d = new Dicionario($entity);
-                if (!empty($d->getInfo()["link"]) && $meta = $d->search($d->getInfo()["link"])) {
-                    $read->exeRead($entity, "WHERE {$meta->getColumn()} = :c", "c={$name}");
-                    if ($read->getResult()) {
-                        $d->setData($read->getResult()[0]['id']);
-                        $this->dicionario = $d;
-                    }
-                }
-            }
-        }
-    }
-
     /**
      * Prepara o formato do título caso tenha variáveis
      *
      * @param string $title
      * @return string
      */
-    private function prepareTitle(string $title): string
+    private function prepareTitle(string $title, string $file): string
     {
-        if (preg_match('/{\$/i', $title)) {
+        if (preg_match('/{{/i', $title)) {
             $data = [
                 "sitename" => SITENAME,
+                "SITENAME" => SITENAME,
                 "sitesub" => SITESUB,
-                "relevant" => !empty($this->dicionario) ? $this->dicionario->getRelevant()->getValue() : ""
+                "SITESUB" => SITESUB,
+                "title" => !empty($this->dicionario) ? $this->dicionario->getRelevant()->getValue() : ucwords(str_replace(['-', "_"], " ", $file)),
+                "file" => ucwords(str_replace(['-', "_"], " ", $file))
             ];
 
-            foreach (explode('{$', $title) as $i => $item) {
+            foreach (explode('{{', $title) as $i => $item) {
                 if ($i > 0) {
-                    $variavel = explode('}', $item)[0];
-                    $title = str_replace('{$' . $variavel . '}', (!empty($data[$variavel]) ? $data[$variavel] : ""), $title);
+                    $variavel = explode('}}', $item)[0];
+                    $title = str_replace('{{' . $variavel . '}}', (!empty($data[$variavel]) ? $data[$variavel] : ""), $title);
                 }
             }
         }
         return $title;
-    }
-
-    private function prepareDependency(array $param, string $extensao): string
-    {
-        $return = "";
-        foreach ($param as $dependency)
-            $return .= $this->getLinkDependency($dependency, $extensao);
-
-        return $return;
     }
 
     /**
@@ -276,7 +266,7 @@ class Link extends Route
         $path = $assets . "fonts.min.css";
         $fonts = "";
 
-        if(!file_exists(PATH_HOME . $path)) {
+        if (!file_exists(PATH_HOME . $path)) {
             if ($fontList) {
                 foreach ($fontList as $item)
                     $fonts .= $this->getFontIcon($item, "font");
@@ -291,9 +281,13 @@ class Link extends Route
             $m->minify(PATH_HOME . $path);
         }
 
-        return "<link rel='stylesheet' href='" . HOME . $path . "?v=" . VERSION. "' type='text/css' media='all'/>";
+        return "<link rel='stylesheet' href='" . HOME . $path . "?v=" . VERSION . "' type='text/css' media='all'/>";
     }
 
+    /**
+     * @param null $param
+     * @return string
+     */
     private function prepareMeta($param = null)
     {
         $return = "";
@@ -321,7 +315,7 @@ class Link extends Route
             if (!Helper::isOnline("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"))
                 return "";
 
-            if($extensao === 'js')
+            if ($extensao === 'js')
                 $mini = new Minify\JS(file_get_contents("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"));
             else
                 $mini = new Minify\CSS(file_get_contents("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"));
@@ -332,13 +326,10 @@ class Link extends Route
         return $file;
     }
 
-    private function getLinkDependency($library, $extensao)
-    {
-        $file = $this->checkAssetsExist($library, $extensao);
-        return $extensao === "js" ? "<script src='" . HOME . $file . "?v=" . VERSION . "' defer ></script>\n" : "<link rel='stylesheet' href='" . HOME . $file . "?v=" . VERSION . "'>\n";
-    }
-
-    private function createFolderAssetsLibraries($file)
+    /**
+     * @param string $file
+     */
+    private function createFolderAssetsLibraries(string $file)
     {
         $link = PATH_HOME;
         $split = explode('/', $file);
