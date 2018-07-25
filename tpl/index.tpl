@@ -21,9 +21,9 @@
     {$font}
     <script>
         const HOME = '{$home}';
-        const ISDEV = {$dev};
         const DOMINIO = '{$dominio}';
         const VERSION = {$version};
+        const VENDOR = '{$vendor}';
     </script>
     {$js}
 </head>
