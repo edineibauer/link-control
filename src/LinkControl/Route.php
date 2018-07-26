@@ -20,10 +20,8 @@ class Route
 
     public function __construct()
     {
-        if (Check::ajax())
-            $this->ajaxRequest();
-        else
-            $this->directAcces();
+        $paths = array_filter(explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT)))));
+        $this->searchRoute($paths, 'view');
     }
 
     /**
@@ -56,24 +54,6 @@ class Route
     public function getFile()
     {
         return $this->file;
-    }
-
-    /**
-     * Acesso via ajax
-     */
-    private function ajaxRequest()
-    {
-        $paths = array_filter(explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT)))));
-        $this->searchRoute($paths, 'view');
-    }
-
-    /**
-     * Acesso direto a um url
-     */
-    private function directAcces()
-    {
-        $paths = array_filter(explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT)))));
-        $this->searchRoute($paths, 'view');
     }
 
     /**
@@ -126,11 +106,24 @@ class Route
             return "{$dir}/{$path}.php";
         }
 
+        //interno login setor
+        if (!empty($_SESSION['userlogin']) && file_exists(PATH_HOME . "{$dir}/{$_SESSION['userlogin']['setor']}/{$path}.php")) {
+            $this->lib = defined('DOMINIO') ? DOMINIO : '';
+            return "{$dir}/{$path}.php";
+        }
+
         //libs
         foreach ($this->getRouteFile() as $this->lib) {
-            $pathReturn = VENDOR . "{$this->lib}/{$dir}/{$path}.php";
-            if (file_exists(PATH_HOME . $pathReturn))
-                return $pathReturn;
+            if (file_exists(PATH_HOME . VENDOR . "{$this->lib}/{$dir}/{$path}.php"))
+                return VENDOR . "{$this->lib}/{$dir}/{$path}.php";
+        }
+
+        //libs login setor
+        if (!empty($_SESSION['userlogin'])) {
+            foreach ($this->getRouteFile() as $this->lib) {
+                if (file_exists(PATH_HOME . VENDOR . "{$this->lib}/{$dir}/{$_SESSION['userlogin']['setor']}/{$path}.php"))
+                    return VENDOR . "{$this->lib}/{$dir}/{$_SESSION['userlogin']['setor']}/{$path}.php";
+            }
         }
 
         return null;
