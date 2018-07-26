@@ -109,7 +109,7 @@ class Route
         //interno login setor
         if (!empty($_SESSION['userlogin']) && file_exists(PATH_HOME . "{$dir}/{$_SESSION['userlogin']['setor']}/{$path}.php")) {
             $this->lib = defined('DOMINIO') ? DOMINIO : '';
-            return "{$dir}/{$path}.php";
+            return "{$dir}/{$_SESSION['userlogin']['setor']}/{$path}.php";
         }
 
         //libs
