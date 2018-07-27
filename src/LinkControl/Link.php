@@ -99,6 +99,7 @@ class Link
             "css" => "",
             "js" => "",
             "font" => "",
+            "descricao" => "",
             "analytics" => defined("ANALYTICS") ? ANALYTICS : ""
         ];
 
