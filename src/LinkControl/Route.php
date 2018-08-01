@@ -21,14 +21,15 @@ class Route
     /**
      * Route constructor.
      * @param string|null $url
+     * @param string $dir
      */
-    public function __construct(string $url = null)
+    public function __construct(string $url = null, string $dir = "view")
     {
         if (!$url)
             $url = strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT)));
 
         $paths = array_filter(explode('/', $url));
-        $this->searchRoute($paths, 'view');
+        $this->searchRoute($paths, $dir);
     }
 
     /**
@@ -91,8 +92,10 @@ class Route
             if (!$this->route && !Check::ajax()) {
                 $this->file = $path = "404";
                 if (!$this->route = $this->findRoute($path, $dir)) {
-                    var_dump("Erro: Site não possúi arquivo 404 padrão. Crie o arquivo 'view/404.php'");
-                    die;
+                    if($dir === "view") {
+                        var_dump("Erro: Site não possúi arquivo 404 padrão. Crie o arquivo 'view/404.php'");
+                        die;
+                    }
                 }
             }
         }
