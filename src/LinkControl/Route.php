@@ -18,9 +18,16 @@ class Route
     private $file;
     private $var;
 
-    public function __construct()
+    /**
+     * Route constructor.
+     * @param string|null $url
+     */
+    public function __construct(string $url = null)
     {
-        $paths = array_filter(explode('/', strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT)))));
+        if (!$url)
+            $url = strip_tags(trim(filter_input(INPUT_GET, 'url', FILTER_DEFAULT)));
+
+        $paths = array_filter(explode('/', $url));
         $this->searchRoute($paths, 'view');
     }
 
