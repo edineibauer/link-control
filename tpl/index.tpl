@@ -15,20 +15,21 @@
     <link rel="apple-touch-icon" href="{$favicon}">
     <meta name="msapplication-TileImage" content="{$favicon}">
     <meta name="msapplication-TileColor" content="#2F3BA2">
-
-    {$meta}
-    {$css}
+    <link rel='stylesheet' href='{$home}assetsPublic/core.min.css?v={$version}' >
+    <link rel='stylesheet' href='{$home}assetsPublic/fonts.min.css?v={$version}' type='text/css' media='all'/>
     {$font}
+
     <script>
         const HOME = '{$home}';
         const DOMINIO = '{$dominio}';
         const VERSION = {$version};
         const VENDOR = '{$vendor}';
+        const LOADFILE = '{$url}';
     </script>
-    {$js}
+    <script src='{$home}assetsPublic/core.min.js?v={$version}' defer ></script>
 </head>
 <body>
-<div class="col padding-medium theme z-depth-2 header relative" style="z-index: 19">
+<div class="col padding-medium theme z-depth-2 no-selec header relative" style="z-index: 19">
     <div class="col {if !$loged}container-1200{/if}">
         <header class="left padding-tiny header-logo">
             <a href="{$home}" class="left">
@@ -158,7 +159,7 @@
     </svg>
 </div>
 
-<section class="col space-header" id="content" data-initial="{$url}" data-load="0"></section>
+<section class="col space-header" id="content"></section>
 
 {if $analytics != ""}
     <script async src="https://www.googletagmanager.com/gtag/js?id={$analytics}"></script>

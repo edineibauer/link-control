@@ -35,7 +35,6 @@ class Link
         else
             $this->param['title'] = $this->prepareTitle($this->param['title'], $file);
 
-        $this->getParamCore();
         $this->createMinFilesVendor();
         $this->param["vendor"] = VENDOR;
         $this->param["url"] = $file . (!empty($var) ? "/{$var}" : "");
@@ -71,6 +70,7 @@ class Link
 
     private function createMinFilesVendor()
     {
+        //Minifica todos os Vendors Assets
         foreach (Helper::listFolder(PATH_HOME . VENDOR) as $lib) {
             foreach (Helper::listFolder(PATH_HOME . VENDOR . $lib . "/assets") as $file) {
                 $ext = pathinfo($file, PATHINFO_EXTENSION);
@@ -85,6 +85,13 @@ class Link
                 }
             }
         }
+
+        if(file_exists(PATH_HOME . "_config/param.json"))
+            $f = json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true);
+
+        $this->createCoreJs($f['js'], 'core');
+        $this->createCoreCss($f['css'], 'core');
+        $this->createCoreFont($f['font'], $f['icon'], 'fonts');
     }
 
     /**
@@ -103,8 +110,15 @@ class Link
             "analytics" => defined("ANALYTICS") ? ANALYTICS : ""
         ];
 
-        if (file_exists(PATH_HOME . ($lib === DOMINIO ? "" : VENDOR . "{$lib}/") . "param/{$file}.json"))
+        $pathFile = ($lib === DOMINIO ? "" : VENDOR . "{$lib}/");
+        if (file_exists(PATH_HOME . $pathFile . "param/{$file}.json"))
             $base = array_merge($base, json_decode(file_get_contents(PATH_HOME . ($lib === DOMINIO ? "" : VENDOR . "{$lib}/") . "param/{$file}.json"), true));
+
+        if(file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.js"))
+            $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
+
+        if(file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.css"))
+            $base['css'][] = HOME . $pathFile . "assets/{$file}.min.css";
 
         return $base;
     }
@@ -136,60 +150,57 @@ class Link
     }
 
     /**
-     * Obtém os parâmetros do Core da aplicação Singular
-     */
-    private function getParamCore()
-    {
-        $f = ['js' => $this->param['js'], 'css' => $this->param['css'], 'meta' => $this->param['meta'], 'font' => $this->param['font']];
-        unset($this->param['js'], $this->param['css'], $this->param['meta'], $this->param['font']);
-        if(file_exists(PATH_HOME . "_config/param.json"))
-            $f = array_merge($f, json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true));
-
-        $this->param['js'] = $this->minimizeJS($f['js']);
-        $this->param['css'] = $this->minimizeCSS($f['css']);
-        $this->param['font'] = (!empty($f['icon']) && !empty($f['font']) ? $this->prepareFont($f['font'], $f['icon']) : (!empty($f['font']) ? $this->prepareFont($f['font']) : (!empty($f['icon']) ? $this->prepareFont(null, $f['icon']) : "")));
-        $this->param['meta'] = $this->prepareMeta($f['meta'] ?? null);
-    }
-
-    /**
-     * Minimiza lista de Javascript files em um arquivo único
-     *
      * @param array $jsList
      * @param string $name
-     * @return string
      */
-    private function minimizeJS(array $jsList, string $name = "core"): string
+    private function createCoreJs(array $jsList, string $name = "core")
     {
-        $assets = "assets" . (DEV ? "Public" : "");
-        if (!file_exists(PATH_HOME . $assets . "/{$name}.min.js")) {
+        if (!file_exists(PATH_HOME . "assetsPublic/{$name}.min.js")) {
             $minifier = new Minify\JS("");
             foreach ($jsList as $js)
-                $minifier->add(PATH_HOME . $this->checkAssetsExist($js, 'js'));
+                $minifier->add(PATH_HOME . $this->checkAssetsExist($js, "js"));
 
-            $minifier->minify(PATH_HOME . $assets . "/{$name}.min.js");
+            $minifier->minify(PATH_HOME . "assetsPublic/{$name}.min.js");
         }
-        return "<script src='" . HOME . $assets . "/{$name}.min.js?v=" . VERSION . "' defer ></script>\n";
     }
 
     /**
-     * Minimiza lista de Styles files em um arquivo único
-     *
      * @param array $cssList
      * @param string $name
-     * @return string
      */
-    private function minimizeCSS(array $cssList, string $name = "core"): string
+    private function createCoreCss(array $cssList, string $name = "core")
     {
-        $assets = "assets" . (DEV ? "Public" : "");
-        if (!file_exists(PATH_HOME . $assets . "/{$name}.min.css")) {
+        if (!file_exists(PATH_HOME . "assetsPublic/{$name}.min.css")) {
             $minifier = new Minify\CSS("");
             $minifier->setMaxImportSize(30);
             foreach ($cssList as $css)
-                $minifier->add(PATH_HOME . $this->checkAssetsExist($css, 'css'));
+                $minifier->add(PATH_HOME . $this->checkAssetsExist($css, "css"));
 
-            $minifier->minify(PATH_HOME . $assets . "/{$name}.min.css");
+            $minifier->minify(PATH_HOME . "assetsPublic/{$name}.min.css");
         }
-        return "<link rel='stylesheet' href='" . HOME . $assets . "/{$name}.min.css?v=" . VERSION . "' >\n";
+    }
+
+    /**
+     * @param $fontList
+     * @param null $iconList
+     * @param string $name
+     */
+    private function createCoreFont($fontList, $iconList = null, string $name = 'fonts')
+    {
+        if (!file_exists(PATH_HOME . "assetsPublic/{$name}.min.css")) {
+            $fonts = "";
+            if ($fontList) {
+                foreach ($fontList as $item)
+                    $fonts .= $this->getFontIcon($item, "font");
+            }
+            if ($iconList) {
+                foreach ($iconList as $item)
+                    $fonts .= $this->getFontIcon($item, "icon");
+            }
+
+            $m = new Minify\CSS($fonts);
+            $m->minify(PATH_HOME . "assetsPublic/{$name}.min.css");
+        }
     }
 
     /**
@@ -257,35 +268,6 @@ class Link
     }
 
     /**
-     * @param mixed $fontList
-     * @param mixed $iconList
-     * @return string
-     */
-    private function prepareFont($fontList, $iconList = null): string
-    {
-        $assets = (DEV ? "assetsPublic/" : "assets/");
-        $path = $assets . "fonts.min.css";
-        $fonts = "";
-
-        if (!file_exists(PATH_HOME . $path)) {
-            if ($fontList) {
-                foreach ($fontList as $item)
-                    $fonts .= $this->getFontIcon($item, "font");
-            }
-
-            if ($iconList) {
-                foreach ($iconList as $item)
-                    $fonts .= $this->getFontIcon($item, "icon");
-            }
-
-            $m = new Minify\CSS($fonts);
-            $m->minify(PATH_HOME . $path);
-        }
-
-        return "<link rel='stylesheet' href='" . HOME . $path . "?v=" . VERSION . "' type='text/css' media='all'/>";
-    }
-
-    /**
      * @param null $param
      * @return string
      */
@@ -310,9 +292,8 @@ class Link
      */
     private function checkAssetsExist(string $lib, string $extensao): string
     {
-        $file = (DEV ? "assetsPublic" : "assets") . "/{$lib}/{$lib}" . ".min.{$extensao}";
-        if (!file_exists($file)) {
-            $this->createFolderAssetsLibraries($file);
+        if (!file_exists("assetsPublic/{$lib}/{$lib}.min.{$extensao}")) {
+            $this->createFolderAssetsLibraries("assetsPublic/{$lib}/{$lib}.min.{$extensao}");
             if (!Helper::isOnline("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"))
                 return "";
 
@@ -321,10 +302,10 @@ class Link
             else
                 $mini = new Minify\CSS(file_get_contents("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"));
 
-            $mini->minify(PATH_HOME . $file);
+            $mini->minify(PATH_HOME . "assetsPublic/{$lib}/{$lib}.min.{$extensao}");
         }
 
-        return $file;
+        return "assetsPublic/{$lib}/{$lib}.min.{$extensao}";
     }
 
     /**
