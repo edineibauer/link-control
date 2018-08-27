@@ -95,9 +95,6 @@
                 {else}
                     <div class="col s4"><i class="material-icons font-jumbo">people</i></div>
                 {/if}
-                <div class="col font-large font-bold">
-                    {$login.nome}
-                </div>
                 <div class="col font-medium font-light">
                     <span class="left">
                         {$login.email}
