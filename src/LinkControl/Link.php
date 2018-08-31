@@ -100,6 +100,7 @@ class Link
      */
     private function getBaseParam(string $lib, string $file)
     {
+        $teste = 1;
         $base = [
             "version" => VERSION,
             "meta" => "",
