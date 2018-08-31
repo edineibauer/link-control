@@ -103,8 +103,8 @@ class Link
         $base = [
             "version" => VERSION,
             "meta" => "",
-            "css" => "",
-            "js" => "",
+            "css" => [],
+            "js" => [],
             "font" => "",
             "descricao" => "",
             "analytics" => defined("ANALYTICS") ? ANALYTICS : ""
