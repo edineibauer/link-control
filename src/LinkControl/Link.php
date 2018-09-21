@@ -27,7 +27,7 @@ class Link
      */
     function __construct(string $lib, string $file, $var = null)
     {
-        $this->devLibrary = "http://dev.ontab.com.br";
+        $this->devLibrary = "http://uebster.com/library";
 
         $this->param = $this->getBaseParam($lib, $file);
         if (empty($this->param['title']))
