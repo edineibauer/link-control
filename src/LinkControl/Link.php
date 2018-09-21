@@ -18,6 +18,7 @@ class Link
     private $url;
     private $param;
     private $dicionario;
+    private $devLibrary;
 
     /**
      * Link constructor.
