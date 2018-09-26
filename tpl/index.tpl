@@ -24,7 +24,7 @@
         const DOMINIO = '{$dominio}';
         const VERSION = {$version};
         const VENDOR = '{$vendor}';
-        const LOADFILE = '{$url}';
+        const ROUTE = '{$url}';
     </script>
     <script src='{$home}assetsPublic/core.min.js?v={$version}' defer ></script>
 </head>
