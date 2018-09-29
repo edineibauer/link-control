@@ -29,7 +29,7 @@
     <script src='{$home}assetsPublic/core.min.js?v={$version}' defer ></script>
 </head>
 <body>
-<div class="col padding-medium theme z-depth-2 no-selec header relative" style="z-index: 19">
+<div class="col padding-small theme z-depth-2 no-selec header relative" style="z-index: 19">
     <div class="col {if !$loged}container-1200{/if}">
         <header class="left padding-tiny header-logo">
             <a href="{$home}" class="left">
