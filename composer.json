@@ -10,7 +10,7 @@
     }
   ],
   "require": {
-    "php": "^7.2",
+    "php": "^7.1",
     "conn/helpers": "1.5.*",
     "matthiasmullie/minify": "1.3.*"
   },
