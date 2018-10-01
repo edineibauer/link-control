@@ -69,7 +69,7 @@ class Route
      */
     private function searchRoute(array $paths, string $dir = 'view')
     {
-        if($dir === 'view') {
+        if ($dir === 'view') {
             if (count($paths) > 1) {
                 $this->var = array_pop($paths);
                 $this->file = array_pop($paths);
@@ -93,14 +93,14 @@ class Route
                 if (!$this->route && !Check::ajax()) {
                     $this->file = $path = "404";
                     if (!$this->route = $this->findRoute($path, $dir)) {
-                        if($dir === "view") {
+                        if ($dir === "view") {
                             var_dump("Erro: Site não possúi arquivo 404 padrão. Crie o arquivo 'view/404.php'");
                             die;
                         }
                     }
                 }
             }
-        } elseif($dir === 'ajax') {
+        } elseif ($dir === 'ajax') {
             if (count($paths) > 1) {
                 $this->lib = $paths[0];
                 unset($paths[0]);
@@ -108,7 +108,7 @@ class Route
             } else {
                 $this->file = $paths[0] ?? "index";
             }
-            if(!empty($this->lib) && file_exists(PATH_HOME . ($this->lib === DOMINIO ? "public/" : VENDOR . $this->lib . "/") . "{$dir}/" . $this->file . ".php" ))
+            if (!empty($this->lib) && file_exists(PATH_HOME . ($this->lib === DOMINIO ? "public/" : VENDOR . $this->lib . "/") . "{$dir}/" . $this->file . ".php"))
                 $this->route = ($this->lib === DOMINIO ? "public/" : VENDOR . $this->lib . "/") . "{$dir}/" . $this->file . ".php";
         }
     }
@@ -123,19 +123,23 @@ class Route
     private function findRoute(string $path, string $dir)
     {
         $libsPath = ["public"];
-        if(!empty($_SESSION['userlogin'])) {
+        if (!empty($_SESSION['userlogin'])) {
             $libsPath[] = "public/{$_SESSION['userlogin']['setor']}";
-            $libsPath = array_merge($libsPath, array_map(function($class) {
+            $libsPath = array_merge($libsPath, array_map(function ($class) {
                 return VENDOR . $_SESSION['userlogin']['setor'] . "/" . $class;
             }, $this->getRouteFile()));
         }
-        $libsPath = array_merge($libsPath, array_map(function($class) {
+        $libsPath = array_merge($libsPath, array_map(function ($class) {
             return VENDOR . $class;
         }, $this->getRouteFile()));
 
         foreach ($libsPath as $item) {
             if (file_exists(PATH_HOME . "{$item}/{$dir}/{$path}.php")) {
-                $this->lib = str_replace([VENDOR . "{$_SESSION['userlogin']['setor']}/", VENDOR, "public/{$_SESSION['userlogin']['setor']}", 'public'], ['', '', DOMINIO, DOMINIO], $item);
+                if (!empty($_SESSION['userlogin']))
+                    $this->lib = str_replace([VENDOR . "{$_SESSION['userlogin']['setor']}/", VENDOR, "public/{$_SESSION['userlogin']['setor']}", 'public'], ['', '', DOMINIO, DOMINIO], $item);
+                else
+                    $this->lib = str_replace([VENDOR, 'public'], ['', DOMINIO], $item);
+
                 return "{$item}/{$dir}/{$path}.php";
             }
         }
