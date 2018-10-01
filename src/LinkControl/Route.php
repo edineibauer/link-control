@@ -108,8 +108,8 @@ class Route
             } else {
                 $this->file = $paths[0] ?? "index";
             }
-            if(!empty($this->lib) && file_exists(PATH_HOME . ($this->lib === DOMINIO ? "" : VENDOR . $this->lib . "/") . "{$dir}/" . $this->file . ".php" ))
-                $this->route = ($this->lib === DOMINIO ? "" : VENDOR . $this->lib . "/") . "{$dir}/" . $this->file . ".php";
+            if(!empty($this->lib) && file_exists(PATH_HOME . ($this->lib === DOMINIO ? "public/" : VENDOR . $this->lib . "/") . "{$dir}/" . $this->file . ".php" ))
+                $this->route = ($this->lib === DOMINIO ? "public/" : VENDOR . $this->lib . "/") . "{$dir}/" . $this->file . ".php";
         }
     }
 
@@ -122,29 +122,21 @@ class Route
      */
     private function findRoute(string $path, string $dir)
     {
-        //interno
-        if (file_exists(PATH_HOME . "{$dir}/{$path}.php")) {
-            $this->lib = defined('DOMINIO') ? DOMINIO : '';
-            return "{$dir}/{$path}.php";
+        $libsPath = ["public"];
+        if(!empty($_SESSION['userlogin'])) {
+            $libsPath[] = "public/{$_SESSION['userlogin']['setor']}";
+            $libsPath = array_merge($libsPath, array_map(function($class) {
+                return VENDOR . $_SESSION['userlogin']['setor'] . "/" . $class;
+            }, $this->getRouteFile()));
         }
+        $libsPath = array_merge($libsPath, array_map(function($class) {
+            return VENDOR . $class;
+        }, $this->getRouteFile()));
 
-        //interno login setor
-        if (!empty($_SESSION['userlogin']) && file_exists(PATH_HOME . "{$dir}/{$_SESSION['userlogin']['setor']}/{$path}.php")) {
-            $this->lib = defined('DOMINIO') ? DOMINIO : '';
-            return "{$dir}/{$_SESSION['userlogin']['setor']}/{$path}.php";
-        }
-
-        //libs
-        foreach ($this->getRouteFile() as $this->lib) {
-            if (file_exists(PATH_HOME . VENDOR . "{$this->lib}/{$dir}/{$path}.php"))
-                return VENDOR . "{$this->lib}/{$dir}/{$path}.php";
-        }
-
-        //libs login setor
-        if (!empty($_SESSION['userlogin'])) {
-            foreach ($this->getRouteFile() as $this->lib) {
-                if (file_exists(PATH_HOME . VENDOR . "{$this->lib}/{$dir}/{$_SESSION['userlogin']['setor']}/{$path}.php"))
-                    return VENDOR . "{$this->lib}/{$dir}/{$_SESSION['userlogin']['setor']}/{$path}.php";
+        foreach ($libsPath as $item) {
+            if (file_exists(PATH_HOME . "{$item}/{$dir}/{$path}.php")) {
+                $this->lib = str_replace([VENDOR . "{$_SESSION['userlogin']['setor']}/", VENDOR, "public/{$_SESSION['userlogin']['setor']}", 'public'], ['', '', DOMINIO, DOMINIO], $item);
+                return "{$item}/{$dir}/{$path}.php";
             }
         }
 

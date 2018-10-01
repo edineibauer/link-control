@@ -32,7 +32,7 @@ class Link
 
         $this->param = $this->getBaseParam($lib, $file);
         if (empty($this->param['title']))
-            $this->param['title'] = $this->getTitle($lib, $file, $var);
+            $this->param['title'] = $this->getTitle($file, $var);
         else
             $this->param['title'] = $this->prepareTitle($this->param['title'], $file);
 
@@ -76,17 +76,18 @@ class Link
             foreach (Helper::listFolder(PATH_HOME . VENDOR . $lib . "/assets") as $file) {
                 $ext = pathinfo($file, PATHINFO_EXTENSION);
                 $name = pathinfo($file, PATHINFO_BASENAME);
-                if (preg_match('/(^\.min)\.[js|css]$/i', $file) && !file_exist(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}")) {
+                if (preg_match('/(^\.min)\.[js|css]$/i', $file) && !file_exists(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}")) {
                     if (preg_match('/\.js$/i', $file))
-                        $minifier = new Minify\JS(file_get_content(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
+                        $minifier = new Minify\JS(file_get_contents(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
                     else
-                        $minifier = new Minify\CSS(file_get_content(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
+                        $minifier = new Minify\CSS(file_get_contents(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
 
                     $minifier->minify(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}");
                 }
             }
         }
 
+        $f = [];
         if(file_exists(PATH_HOME . "_config/param.json"))
             $f = json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true);
 
@@ -98,10 +99,10 @@ class Link
     /**
      * @param string $lib
      * @param string $file
+     * @return array
      */
     private function getBaseParam(string $lib, string $file)
     {
-        $teste = 1;
         $base = [
             "version" => VERSION,
             "meta" => "",
@@ -112,9 +113,9 @@ class Link
             "analytics" => defined("ANALYTICS") ? ANALYTICS : ""
         ];
 
-        $pathFile = ($lib === DOMINIO ? "" : VENDOR . "{$lib}/");
+        $pathFile = ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/");
         if (file_exists(PATH_HOME . $pathFile . "param/{$file}.json"))
-            $base = array_merge($base, json_decode(file_get_contents(PATH_HOME . ($lib === DOMINIO ? "" : VENDOR . "{$lib}/") . "param/{$file}.json"), true));
+            $base = array_merge($base, json_decode(file_get_contents(PATH_HOME . ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/") . "param/{$file}.json"), true));
 
         if(file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.js"))
             $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
@@ -126,12 +127,11 @@ class Link
     }
 
     /**
-     * @param string $lib
      * @param string $file
      * @param null $var
      * @return string
      */
-    private function getTitle(string $lib, string $file, $var = null): string
+    private function getTitle(string $file, $var = null): string
     {
         $entity = str_replace("-", "_", $file);
         if (file_exists(PATH_HOME . "entity/cache/{$entity}.json") && $var) {
@@ -241,27 +241,26 @@ class Link
     private function getFontIcon(string $item, string $tipo): string
     {
         $data = "";
-        $assets = (DEV ? "assetsPublic/" : "assets/");
         $urlOnline = $tipo === "font" ? "https://fonts.googleapis.com/css?family=" . ucfirst($item) . ":100,300,400,700" : "https://fonts.googleapis.com/icon?family=" . ucfirst($item) . "+Icons";
         if (Helper::isOnline($urlOnline)) {
             $data = file_get_contents($urlOnline);
             foreach (explode('url(', $data) as $i => $u) {
                 if ($i > 0) {
                     $url = explode(')', $u)[0];
-                    if (!file_exists(PATH_HOME . $assets . "fonts/" . pathinfo($url, PATHINFO_BASENAME))) {
+                    if (!file_exists(PATH_HOME . "assetsPublic/fonts/" . pathinfo($url, PATHINFO_BASENAME))) {
                         if (Helper::isOnline($url)) {
-                            Helper::createFolderIfNoExist(PATH_HOME . $assets . "fonts");
-                            $f = fopen(PATH_HOME . $assets . "fonts/" . pathinfo($url, PATHINFO_BASENAME), "w+");
+                            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/fonts");
+                            $f = fopen(PATH_HOME . "assetsPublic/fonts/" . pathinfo($url, PATHINFO_BASENAME), "w+");
                             fwrite($f, file_get_contents($url));
                             fclose($f);
-                            $data = str_replace($url, HOME . $assets . "fonts/" . pathinfo($url, PATHINFO_BASENAME), $data);
+                            $data = str_replace($url, HOME . "assetsPublic/fonts/" . pathinfo($url, PATHINFO_BASENAME), $data);
                         } else {
                             $before = "@font-face" . explode("@font-face", $u[$i - 1])[1] . "url(";
                             $after = explode("}", $u)[0];
                             $data = str_replace($before . $after, "", $data);
                         }
                     } else {
-                        $data = str_replace($url, HOME . $assets . "fonts/" . pathinfo($url, PATHINFO_BASENAME), $data);
+                        $data = str_replace($url, HOME . "assetsPublic/fonts/" . pathinfo($url, PATHINFO_BASENAME), $data);
                     }
                 }
             }
