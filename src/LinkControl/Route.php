@@ -120,28 +120,22 @@ class Route
      * @param string $dir
      * @return null|string
      */
-    private function findRoute(string $path, string $dir)
+    private function findRoute(string $path, string $dir = "view")
     {
-        $libsPath = ["public"];
-        if (!empty($_SESSION['userlogin'])) {
-            $libsPath[] = "public/{$_SESSION['userlogin']['setor']}";
-            $libsPath = array_merge($libsPath, array_map(function ($class) {
-                return VENDOR . $_SESSION['userlogin']['setor'] . "/" . $class;
-            }, $this->getRouteFile()));
+
+        $libsPath = ["public/{$dir}" => DOMINIO];
+        if (!empty($_SESSION['userlogin']))
+            $libsPath["public/{$dir}/{$_SESSION['userlogin']['setor']}"] = DOMINIO;
+
+        foreach ($this->getRouteFile() as $library) {
+            $libsPath[VENDOR . $library . "/{$dir}"] = $library;
+            if (!empty($_SESSION['userlogin']))
+                $libsPath[VENDOR . $library . "/{$dir}/{$_SESSION['userlogin']['setor']}"] = $library;
         }
-        $libsPath = array_merge($libsPath, array_map(function ($class) {
-            return VENDOR . $class;
-        }, $this->getRouteFile()));
 
-        foreach ($libsPath as $item) {
-            if (file_exists(PATH_HOME . "{$item}/{$dir}/{$path}.php")) {
-                if (!empty($_SESSION['userlogin']))
-                    $this->lib = str_replace([VENDOR . "{$_SESSION['userlogin']['setor']}/", VENDOR, "public/{$_SESSION['userlogin']['setor']}", 'public'], ['', '', DOMINIO, DOMINIO], $item);
-                else
-                    $this->lib = str_replace([VENDOR, 'public'], ['', DOMINIO], $item);
-
-                return "{$item}/{$dir}/{$path}.php";
-            }
+        foreach ($libsPath as $item => $this->lib) {
+            if (file_exists(PATH_HOME . "{$item}/{$path}.php"))
+                return "{$item}/{$path}.php";
         }
 
         return null;
