@@ -91,8 +91,14 @@ class Link
         if (file_exists(PATH_HOME . "_config/param.json"))
             $f = json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true);
 
-        $this->createCoreJs($f['js'], 'core');
-        $this->createCoreCss($f['css'], 'core');
+        if (!file_exists(PATH_HOME . "assetsPublic/core.min.js") || !file_exists(PATH_HOME . "assetsPublic/core.min.css")) {
+            $list = implode('/', array_merge($f['js'], $f['css']));
+            $data = json_decode(file_get_contents("{$this->devLibrary}app/library/{$list}"), true);
+            if ($data['response'] === 1 && !empty($data['data'])) {
+                $this->createCoreJs($f['js'], $data['data'], 'core');
+                $this->createCoreCss($f['css'], $data['data'], 'core');
+            }
+        }
         $this->createCoreFont($f['font'], $f['icon'], 'fonts');
     }
 
@@ -153,28 +159,23 @@ class Link
 
     /**
      * @param array $jsList
+     * @param array $data
      * @param string $name
      */
-    private function createCoreJs(array $jsList, string $name = "core")
+    private function createCoreJs(array $jsList, array $data, string $name = "core")
     {
         if (!file_exists(PATH_HOME . "assetsPublic/{$name}.min.js")) {
+            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic");
             $minifier = new Minify\JS("");
-            $list = implode('/', $jsList);
-            $data = json_decode(file_get_contents("{$this->devLibrary}app/library/{$list}"), true);
-            if ($data['response'] === 1 && !empty($data['data'])) {
-                foreach ($data['data'] as $datum) {
-                    if (!file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js")) {
-                        foreach (json_decode($datum['arquivos'], true) as $file) {
-                            if ($file['type'] === "text/javascript") {
-                                $url = str_replace('\\', '/', "{$this->devLibrary}{$file['url']}");
-                                if (file_exists($url)) {
-                                    $content = file_get_contents($url);
-                                    $mini = new Minify\JS($content);
-                                    Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
-                                    $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js");
-                                    $minifier->add($content);
-                                }
-                            }
+
+            foreach ($data as $datum) {
+                if (in_array($datum['nome'], $jsList) && !file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js")) {
+                    foreach ($datum['arquivos'] as $file) {
+                        if ($file['type'] === "text/javascript") {
+                            $mini = new Minify\JS($file['content']);
+                            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
+                            $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js");
+                            $minifier->add($file['content']);
                         }
                     }
                 }
@@ -186,32 +187,28 @@ class Link
 
     /**
      * @param array $cssList
+     * @param array $data
      * @param string $name
      */
-    private function createCoreCss(array $cssList, string $name = "core")
+    private function createCoreCss(array $cssList, array $data, string $name = "core")
     {
         if (!file_exists(PATH_HOME . "assetsPublic/{$name}.min.css")) {
+            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic");
             $minifier = new Minify\CSS("");
-            $list = implode('/', $cssList);
-            $data = json_decode(file_get_contents("{$this->devLibrary}app/library/{$list}"), true);
-            if ($data['response'] === 1 && !empty($data['data'])) {
-                foreach ($data['data'] as $datum) {
-                    if (!file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css")) {
-                        foreach (json_decode($datum['arquivos'], true) as $file) {
-                            if ($file['type'] === "text/css") {
-                                $url = str_replace('\\', '/', "{$this->devLibrary}{$file['url']}");
-                                if (file_exists($url)) {
-                                    $content = file_get_contents($url);
-                                    $mini = new Minify\JS($content);
-                                    Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
-                                    $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css");
-                                    $minifier->add($content);
-                                }
-                            }
+
+            foreach ($data as $datum) {
+                if (in_array($datum['nome'], $cssList) && !file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css")) {
+                    foreach ($datum['arquivos'] as $file) {
+                        if ($file['type'] === "text/css") {
+                            $mini = new Minify\JS($file['content']);
+                            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
+                            $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css");
+                            $minifier->add($file['content']);
                         }
                     }
                 }
             }
+
             $minifier->minify(PATH_HOME . "assetsPublic/{$name}.min.css");
         }
     }
@@ -224,6 +221,7 @@ class Link
     private function createCoreFont($fontList, $iconList = null, string $name = 'fonts')
     {
         if (!file_exists(PATH_HOME . "assetsPublic/{$name}.min.css")) {
+            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic");
             $fonts = "";
             if ($fontList) {
                 foreach ($fontList as $item)
