@@ -28,15 +28,15 @@ class Link
      */
     function __construct(string $lib, string $file, $var = null)
     {
-        $this->devLibrary = "http://uebster.com/library";
+        $this->devLibrary = "http://uebster.com/";
 
-        $this->createMinFilesVendor();
         $this->param = $this->getBaseParam($lib, $file);
         if (empty($this->param['title']))
             $this->param['title'] = $this->getTitle($file, $var);
         else
             $this->param['title'] = $this->prepareTitle($this->param['title'], $file);
 
+        $this->createMinFilesVendor();
         $this->param["vendor"] = VENDOR;
         $this->param["url"] = $file . (!empty($var) ? "/{$var}" : "");
         $this->param['loged'] = !empty($_SESSION['userlogin']);
@@ -71,6 +71,22 @@ class Link
 
     private function createMinFilesVendor()
     {
+        //Minifica todos os Vendors Assets
+        foreach (Helper::listFolder(PATH_HOME . VENDOR) as $lib) {
+            foreach (Helper::listFolder(PATH_HOME . VENDOR . $lib . "/assets") as $file) {
+                $ext = pathinfo($file, PATHINFO_EXTENSION);
+                $name = pathinfo($file, PATHINFO_BASENAME);
+                if (preg_match('/(^\.min)\.[js|css]$/i', $file) && !file_exists(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}")) {
+                    if (preg_match('/\.js$/i', $file))
+                        $minifier = new Minify\JS(file_get_contents(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
+                    else
+                        $minifier = new Minify\CSS(file_get_contents(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
+
+                    $minifier->minify(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}");
+                }
+            }
+        }
+
         $f = [];
         if(file_exists(PATH_HOME . "_config/param.json"))
             $f = json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true);
@@ -143,8 +159,23 @@ class Link
     {
         if (!file_exists(PATH_HOME . "assetsPublic/{$name}.min.js")) {
             $minifier = new Minify\JS("");
-            foreach ($jsList as $js)
-                $minifier->add(PATH_HOME . $this->checkAssetsExist($js, "js"));
+            $list = implode('/', $jsList);
+            $data = json_decode(file_get_contents("{$this->devLibrary}app/library/{$list}"), true);
+            if($data['response'] === 1 && !empty($data['data'])) {
+                foreach ($data['data'] as $datum) {
+                    if(!file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js")) {
+                        foreach (json_decode($datum['arquivos'], true) as $file) {
+                            if ($file['type'] === "text/javascript") {
+                                $content = file_get_contents(str_replace('\\', '/', "{$this->devLibrary}{$file['url']}"));
+                                $mini = new Minify\JS($content);
+                                Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
+                                $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js");
+                                $minifier->add($content);
+                            }
+                        }
+                    }
+                }
+            }
 
             $minifier->minify(PATH_HOME . "assetsPublic/{$name}.min.js");
         }
@@ -158,10 +189,23 @@ class Link
     {
         if (!file_exists(PATH_HOME . "assetsPublic/{$name}.min.css")) {
             $minifier = new Minify\CSS("");
-            $minifier->setMaxImportSize(30);
-            foreach ($cssList as $css)
-                $minifier->add(PATH_HOME . $this->checkAssetsExist($css, "css"));
-
+            $list = implode('/', $cssList);
+            $data = json_decode(file_get_contents("{$this->devLibrary}app/library/{$list}"), true);
+            if($data['response'] === 1 && !empty($data['data'])) {
+                foreach ($data['data'] as $datum) {
+                    if(!file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css")) {
+                        foreach (json_decode($datum['arquivos'], true) as $file) {
+                            if ($file['type'] === "text/css") {
+                                $content = file_get_contents(str_replace('\\', '/', "{$this->devLibrary}{$file['url']}"));
+                                $mini = new Minify\JS($content);
+                                Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
+                                $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css");
+                                $minifier->add($content);
+                            }
+                        }
+                    }
+                }
+            }
             $minifier->minify(PATH_HOME . "assetsPublic/{$name}.min.css");
         }
     }
@@ -250,61 +294,5 @@ class Link
             }
         }
         return $data;
-    }
-
-    /**
-     * @param null $param
-     * @return string
-     */
-    private function prepareMeta($param = null)
-    {
-        $return = "";
-
-        if ($param) {
-            foreach ($param as $dependency)
-                $return .= "<meta " . (isset($dependency['name']) ? "name='{$dependency['name']}' " : "") . (isset($dependency['property']) ? "property='{$dependency['property']}' " : "") . "content='{$dependency['content']}'>";
-        }
-
-        return $return;
-    }
-
-    /**
-     * Verifica se uma lib existe no sistema, se não existir, baixa do server
-     *
-     * @param string $lib
-     * @param string $extensao
-     * @return string
-     */
-    private function checkAssetsExist(string $lib, string $extensao): string
-    {
-        if (!file_exists("assetsPublic/{$lib}/{$lib}.min.{$extensao}")) {
-            $this->createFolderAssetsLibraries("assetsPublic/{$lib}/{$lib}.min.{$extensao}");
-            if (!Helper::isOnline("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"))
-                return "";
-
-            if ($extensao === 'js')
-                $mini = new Minify\JS(file_get_contents("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"));
-            else
-                $mini = new Minify\CSS(file_get_contents("{$this->devLibrary}/{$lib}/{$lib}" . ".{$extensao}"));
-
-            $mini->minify(PATH_HOME . "assetsPublic/{$lib}/{$lib}.min.{$extensao}");
-        }
-
-        return "assetsPublic/{$lib}/{$lib}.min.{$extensao}";
-    }
-
-    /**
-     * @param string $file
-     */
-    private function createFolderAssetsLibraries(string $file)
-    {
-        $link = PATH_HOME;
-        $split = explode('/', $file);
-        foreach ($split as $i => $peca) {
-            if ($i < count($split) - 1) {
-                $link .= ($i > 0 ? "/" : "") . $peca;
-                Helper::createFolderIfNoExist($link);
-            }
-        }
     }
 }
