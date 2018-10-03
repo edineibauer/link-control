@@ -88,7 +88,7 @@ class Link
         }
 
         $f = [];
-        if(file_exists(PATH_HOME . "_config/param.json"))
+        if (file_exists(PATH_HOME . "_config/param.json"))
             $f = json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true);
 
         $this->createCoreJs($f['js'], 'core');
@@ -117,10 +117,10 @@ class Link
         if (file_exists(PATH_HOME . $pathFile . "param/{$file}.json"))
             $base = array_merge($base, json_decode(file_get_contents(PATH_HOME . ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/") . "param/{$file}.json"), true));
 
-        if(file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.js"))
+        if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.js"))
             $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
 
-        if(file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.css"))
+        if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.css"))
             $base['css'][] = HOME . $pathFile . "assets/{$file}.min.css";
 
         return $base;
@@ -161,16 +161,19 @@ class Link
             $minifier = new Minify\JS("");
             $list = implode('/', $jsList);
             $data = json_decode(file_get_contents("{$this->devLibrary}app/library/{$list}"), true);
-            if($data['response'] === 1 && !empty($data['data'])) {
+            if ($data['response'] === 1 && !empty($data['data'])) {
                 foreach ($data['data'] as $datum) {
-                    if(!file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js")) {
+                    if (!file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js")) {
                         foreach (json_decode($datum['arquivos'], true) as $file) {
                             if ($file['type'] === "text/javascript") {
-                                $content = file_get_contents(str_replace('\\', '/', "{$this->devLibrary}{$file['url']}"));
-                                $mini = new Minify\JS($content);
-                                Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
-                                $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js");
-                                $minifier->add($content);
+                                $url = str_replace('\\', '/', "{$this->devLibrary}{$file['url']}");
+                                if (file_exists($url)) {
+                                    $content = file_get_contents($url);
+                                    $mini = new Minify\JS($content);
+                                    Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
+                                    $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js");
+                                    $minifier->add($content);
+                                }
                             }
                         }
                     }
@@ -191,16 +194,19 @@ class Link
             $minifier = new Minify\CSS("");
             $list = implode('/', $cssList);
             $data = json_decode(file_get_contents("{$this->devLibrary}app/library/{$list}"), true);
-            if($data['response'] === 1 && !empty($data['data'])) {
+            if ($data['response'] === 1 && !empty($data['data'])) {
                 foreach ($data['data'] as $datum) {
-                    if(!file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css")) {
+                    if (!file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css")) {
                         foreach (json_decode($datum['arquivos'], true) as $file) {
                             if ($file['type'] === "text/css") {
-                                $content = file_get_contents(str_replace('\\', '/', "{$this->devLibrary}{$file['url']}"));
-                                $mini = new Minify\JS($content);
-                                Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
-                                $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css");
-                                $minifier->add($content);
+                                $url = str_replace('\\', '/', "{$this->devLibrary}{$file['url']}");
+                                if (file_exists($url)) {
+                                    $content = file_get_contents($url);
+                                    $mini = new Minify\JS($content);
+                                    Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
+                                    $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css");
+                                    $minifier->add($content);
+                                }
                             }
                         }
                     }
