@@ -203,7 +203,12 @@ class Link
                 }
             }
 
-            $minifier->minify(PATH_HOME . "assetsPublic/{$name}.min.css");
+
+            $dataCss = $minifier->minify();
+
+            $f = fopen(PATH_HOME . "assetsPublic/{$name}.min.css", "w");
+            fwrite($f, str_replace('px-', 'px -', $dataCss));
+            fclose($f);
         }
     }
 
