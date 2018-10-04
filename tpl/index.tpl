@@ -27,6 +27,7 @@
         const ROUTE = '{$url}';
     </script>
     <script src='{$home}assetsPublic/core.min.js?v={$version}' defer ></script>
+    <style id="app-style"></style>
 </head>
 <body>
 <div class="col padding-small theme z-depth-2 no-selec header" style="z-index: 19">

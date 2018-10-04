@@ -112,7 +112,7 @@ class Link
         $base = [
             "version" => VERSION,
             "meta" => "",
-            "css" => [],
+            "css" => "",
             "js" => [],
             "font" => "",
             "descricao" => "",
@@ -127,7 +127,7 @@ class Link
             $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
 
         if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.css"))
-            $base['css'][] = HOME . $pathFile . "assets/{$file}.min.css";
+            $base['css'] .= file_get_contents(HOME . $pathFile . "assets/{$file}.min.css");
 
         return $base;
     }
