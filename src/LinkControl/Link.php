@@ -165,7 +165,7 @@ class Link
                 } elseif(in_array($datum['nome'], $jsList)) {
                     foreach ($datum['arquivos'] as $file) {
                         if ($file['type'] === "text/javascript")
-                            $minifier->add(file_get_contents(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js?v=" . strtotime('now')));
+                            $minifier->add(file_get_contents(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js"));
                     }
                 }
             }
@@ -198,7 +198,7 @@ class Link
                 } elseif(in_array($datum['nome'], $cssList)) {
                     foreach ($datum['arquivos'] as $file) {
                         if ($file['type'] === "text/css")
-                            $minifier->add(file_get_contents(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css?v=" . strtotime('now')));
+                            $minifier->add(file_get_contents(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css"));
                     }
                 }
             }
