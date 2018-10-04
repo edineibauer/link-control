@@ -178,6 +178,11 @@ class Link
                             $minifier->add($file['content']);
                         }
                     }
+                } elseif(in_array($datum['nome'], $jsList)) {
+                    foreach ($datum['arquivos'] as $file) {
+                        if ($file['type'] === "text/javascript")
+                            $minifier->add($file['content']);
+                    }
                 }
             }
 
@@ -205,6 +210,11 @@ class Link
                             $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css");
                             $minifier->add($file['content']);
                         }
+                    }
+                } elseif(in_array($datum['nome'], $cssList)) {
+                    foreach ($datum['arquivos'] as $file) {
+                        if ($file['type'] === "text/css")
+                            $minifier->add($file['content']);
                     }
                 }
             }
