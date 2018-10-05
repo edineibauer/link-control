@@ -37,6 +37,7 @@ class Link
             $this->param['title'] = $this->prepareTitle($this->param['title'], $file);
 
         $this->createMinFilesVendor();
+
         $this->param["vendor"] = VENDOR;
         $this->param["url"] = $file . (!empty($var) ? "/{$var}" : "");
         $this->param['loged'] = !empty($_SESSION['userlogin']);
@@ -76,11 +77,12 @@ class Link
             foreach (Helper::listFolder(PATH_HOME . VENDOR . $lib . "/assets") as $file) {
                 $ext = pathinfo($file, PATHINFO_EXTENSION);
                 $name = pathinfo($file, PATHINFO_BASENAME);
-                if (preg_match('/(^\.min)\.[js|css]$/i', $file) && !file_exists(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}")) {
+                if (!file_exists(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}") && preg_match('/(^\.min)\.[js|css]$/i', $file)) {
                     if (preg_match('/\.js$/i', $file))
                         $minifier = new Minify\JS(file_get_contents(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
                     else
                         $minifier = new Minify\CSS(file_get_contents(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
+
                     $minifier->minify(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}");
                 }
             }
@@ -115,6 +117,7 @@ class Link
             "js" => [],
             "font" => "",
             "descricao" => "",
+            "data" => 0,
             "analytics" => defined("ANALYTICS") ? ANALYTICS : ""
         ];
 
@@ -218,12 +221,7 @@ class Link
                 }
             }
 
-
-            $dataCss = $minifier->minify();
-
-            $f = fopen(PATH_HOME . "assetsPublic/{$name}.min.css", "w");
-            fwrite($f, str_replace('px-', 'px -', $dataCss));
-            fclose($f);
+            $minifier->minify(PATH_HOME . "assetsPublic/{$name}.min.css");
         }
     }
 
