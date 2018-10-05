@@ -6,101 +6,63 @@ use \ConnCrud\TableCrud;
 
 class Sessao
 {
-    private $logged = false;
-    private $mensagem;
-
     public function __construct()
     {
-        if(!session_start())
-            session_start();
+        session_start();
 
-        $this->checkSession();
-    }
-
-    private function checkSession()
-    {
-        if (class_exists('\SessionControl\Login'))
-            $this->checkLoginToken();
-    }
-
-    private function checkLoginToken()
-    {
-        if ($this->isLoggedIn())
-            $this->checkSessionWrong();
-
-        if (!$this->isLoggedIn())
-            $this->checkCookieInfo();
-        else
-            $this->logged = true;
-
-        define("LOGGED", $this->logged);
+        if (class_exists('\SessionControl\Login')){
+            //Cookie Operations
+            if (isset($_COOKIE['token']) && empty($_SESSION['userlogin']))
+                $this->cookieLogin();
+        }
     }
 
     /**
-     * @return bool
+     * Verifica se as informações mantidas no cookie condizem com um login válido
      */
-    public function isLogged(): bool
+    private function cookieLogin()
     {
-        return $this->logged;
+        $beforeDate = date('Y-m-d H:i:s', strtotime("-2 months", strtotime(date("Y-m-d H:i:s"))));
+        $token = new TableCrud("usuarios");
+        $token->load("token", $_COOKIE['token']);
+        if ($token->exist() && $token->status === 1 && $token->token_expira > $beforeDate) {
+
+            //Obtém os dados de login
+            $_SESSION['userlogin'] = $token->getDados();
+
+            //Atualiza tempo de expiração do Token no banco
+            $token->token_expira = date("Y-m-d H:i:s");
+            $token->save();
+
+            //seta cookies para 2 meses de validade
+            setcookie("token", $token, time() + (86400 * 30 * 3), "/"); // 2 meses de cookie
+
+            //redireciona para dashboard
+            header("Location: " . HOME . "dashboard");
+
+        } else {
+
+            //remove cookie não integro
+            $this->unsetCookie();
+        }
     }
 
     /**
-     * @return mixed
+     * Remover Cookie
      */
-    public function getMensagem()
-    {
-        return $this->mensagem;
-    }
-
-    private function isLoggedIn()
-    {
-        return isset($_SESSION['userlogin']);
-    }
-
-    private function checkSessionWrong()
-    {
-        if (!isset($_SESSION['userlogin']['email']))
-            unset($_SESSION['userlogin']);
-    }
-
     private function unsetCookie()
     {
         $token = new TableCrud("usuarios");
         $token->load("token", $_COOKIE['token']);
         if ($token->exist()) {
+
+            //Remove token da base de dados
             $token->token = null;
             $token->token_expira = null;
             $token->save();
         }
 
+        //remove cookie
         setcookie("token", 0, time() - 1, "/");
     }
-
-    public function deslogar()
-    {
-        $this->unsetCookie();
-        unset($_SESSION['userlogin']);
-    }
-
-    private function checkCookieInfo()
-    {
-        if (isset($_COOKIE['token'])) {
-
-            $token = new TableCrud("usuarios");
-            $token->load("token", $_COOKIE['token']);
-            $beforeDate = date('Y-m-d H:i:s', strtotime("-2 months", strtotime(date("Y-m-d H:i:s"))));
-            if ($token->exist() && $token->status === 1 && $token->token_expira > $beforeDate) {
-                $_SESSION['userlogin'] = $token->getDados();
-                $token->token_expira = date("Y-m-d H:i:s");
-                $token->save();
-                $this->logged = true;
-                setcookie("token", $token, time() + (86400 * 30 * 3), "/"); // 2 meses de cookie
-                header("Location: " . HOME . "dashboard");
-
-            } else {
-                $this->unsetCookie();
-            }
-        }
-    }
-
 }
