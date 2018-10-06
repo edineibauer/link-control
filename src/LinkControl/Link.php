@@ -83,9 +83,9 @@ class Link
 
                 //update version system to clear cache on CORE assets
                 $conf = file_get_contents(PATH_HOME . "_config/config.php");
-                $f = fopen(PATH_HOME . "_config/config.php", "w");
-                fwrite($f, str_replace("'VERSION', '" . VERSION . "')", "'VERSION', '" . (VERSION + 0.01) . "')", $conf));
-                fclose($f);
+                $ffile = fopen(PATH_HOME . "_config/config.php", "w");
+                fwrite($ffile, str_replace("'VERSION', '" . VERSION . "')", "'VERSION', '" . (VERSION + 0.01) . "')", $conf));
+                fclose($ffile);
 
                 $this->createCoreJs($f['js'], $data['data'], 'core');
                 $this->createCoreCss($f['css'], $data['data'], 'core');
