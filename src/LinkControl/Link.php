@@ -80,6 +80,13 @@ class Link
             $list = implode('/', array_merge($f['js'], $f['css']));
             $data = json_decode(file_get_contents("{$this->devLibrary}app/library/{$list}"), true);
             if ($data['response'] === 1 && !empty($data['data'])) {
+
+                //update version system to clear cache on CORE assets
+                $conf = file_get_contents(PATH_HOME . "_config/config.php");
+                $f = fopen(PATH_HOME . "_config/config.php", "w");
+                fwrite($f, str_replace("'VERSION', '" . VERSION . "')", "'VERSION', '" . (VERSION + 0.01) . "')", $conf));
+                fclose($f);
+
                 $this->createCoreJs($f['js'], $data['data'], 'core');
                 $this->createCoreCss($f['css'], $data['data'], 'core');
             }
