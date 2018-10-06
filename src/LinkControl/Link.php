@@ -72,22 +72,6 @@ class Link
 
     private function createMinFilesVendor()
     {
-        //Minifica todos os Vendors Assets
-        foreach (Helper::listFolder(PATH_HOME . VENDOR) as $lib) {
-            foreach (Helper::listFolder(PATH_HOME . VENDOR . $lib . "/assets") as $file) {
-                $ext = pathinfo($file, PATHINFO_EXTENSION);
-                $name = pathinfo($file, PATHINFO_BASENAME);
-                if (!file_exists(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}") && preg_match('/(^\.min)\.[js|css]$/i', $file)) {
-                    if (preg_match('/\.js$/i', $file))
-                        $minifier = new Minify\JS(file_get_contents(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
-                    else
-                        $minifier = new Minify\CSS(file_get_contents(PATH_HOME . VENDOR . $lib . "/assets/{$file}"));
-
-                    $minifier->minify(PATH_HOME . VENDOR . $lib . "/assets/{$name}.min.{$ext}");
-                }
-            }
-        }
-
         $f = [];
         if (file_exists(PATH_HOME . "_config/param.json"))
             $f = json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true);
@@ -125,11 +109,21 @@ class Link
         if (file_exists(PATH_HOME . $pathFile . "param/{$file}.json"))
             $base = array_merge($base, json_decode(file_get_contents(PATH_HOME . ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/") . "param/{$file}.json"), true));
 
-        if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.js"))
+        if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.js")) {
             $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
+        } elseif(file_exists(PATH_HOME . $pathFile . "assets/{$file}.js")) {
+            $minifier = new Minify\JS(file_get_contents(PATH_HOME . $pathFile . "assets/{$file}.js"));
+            $minifier->minify(PATH_HOME . $pathFile . "assets/{$file}.min.js");
+            $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
+        }
 
-        if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.css"))
+        if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.css")) {
             $base['css'] .= file_get_contents(HOME . $pathFile . "assets/{$file}.min.css");
+        } elseif(file_exists(PATH_HOME . $pathFile . "assets/{$file}.css")) {
+            $minifier = new Minify\CSS(file_get_contents(PATH_HOME . $pathFile . "assets/{$file}.css"));
+            $minifier->minify(PATH_HOME . $pathFile . "assets/{$file}.min.css");
+            $base['css'] .= file_get_contents(HOME . $pathFile . "assets/{$file}.min.css");
+        }
 
         return $base;
     }
