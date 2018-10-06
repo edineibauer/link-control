@@ -81,7 +81,7 @@ class Link
             $data = json_decode(file_get_contents("{$this->devLibrary}app/library/{$list}"), true);
             if ($data['response'] === 1 && !empty($data['data'])) {
 
-                //update version system to clear cache on CORE assets
+                //update version system
                 $conf = file_get_contents(PATH_HOME . "_config/config.php");
                 $ffile = fopen(PATH_HOME . "_config/config.php", "w");
                 fwrite($ffile, str_replace("'VERSION', '" . VERSION . "')", "'VERSION', '" . (VERSION + 0.01) . "')", $conf));
@@ -118,7 +118,7 @@ class Link
 
         if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.js")) {
             $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
-        } elseif(file_exists(PATH_HOME . $pathFile . "assets/{$file}.js")) {
+        } elseif (file_exists(PATH_HOME . $pathFile . "assets/{$file}.js")) {
             $minifier = new Minify\JS(file_get_contents(PATH_HOME . $pathFile . "assets/{$file}.js"));
             $minifier->minify(PATH_HOME . $pathFile . "assets/{$file}.min.js");
             $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
@@ -126,7 +126,7 @@ class Link
 
         if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.css")) {
             $base['css'] .= file_get_contents(HOME . $pathFile . "assets/{$file}.min.css");
-        } elseif(file_exists(PATH_HOME . $pathFile . "assets/{$file}.css")) {
+        } elseif (file_exists(PATH_HOME . $pathFile . "assets/{$file}.css")) {
             $minifier = new Minify\CSS(file_get_contents(PATH_HOME . $pathFile . "assets/{$file}.css"));
             $minifier->minify(PATH_HOME . $pathFile . "assets/{$file}.min.css");
             $base['css'] .= file_get_contents(HOME . $pathFile . "assets/{$file}.min.css");
@@ -172,19 +172,10 @@ class Link
             $minifier = new Minify\JS("");
 
             foreach ($data as $datum) {
-                if (in_array($datum['nome'], $jsList) && !file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js")) {
-                    foreach ($datum['arquivos'] as $file) {
-                        if ($file['type'] === "text/javascript") {
-                            $mini = new Minify\JS($file['content']);
-                            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
-                            $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js");
-                            $minifier->add($file['content']);
-                        }
-                    }
-                } elseif(in_array($datum['nome'], $jsList)) {
+                if (in_array($datum['nome'], $jsList)) {
                     foreach ($datum['arquivos'] as $file) {
                         if ($file['type'] === "text/javascript")
-                            $minifier->add(file_get_contents(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.js"));
+                            $minifier->add($file['content']);
                     }
                 }
             }
@@ -205,19 +196,22 @@ class Link
             $minifier = new Minify\CSS("");
 
             foreach ($data as $datum) {
-                if (in_array($datum['nome'], $cssList) && !file_exists(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css")) {
+                if ($datum['nome'] === "theme") {
                     foreach ($datum['arquivos'] as $file) {
                         if ($file['type'] === "text/css") {
-                            $mini = new Minify\JS($file['content']);
-                            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/{$datum['nome']}");
-                            $mini->minify(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css");
-                            $minifier->add($file['content']);
+                            if (!file_exists(PATH_HOME . "assetsPublic/theme.min.css")) {
+                                $mini = new Minify\CSS($file['content']);
+                                $mini->minify(PATH_HOME . "assetsPublic/theme.min.css");
+                                $minifier->add($file['content']);
+                            } else {
+                                $minifier->add(file_get_contents(PATH_HOME . "assetsPublic/theme.min.css"));
+                            }
                         }
                     }
-                } elseif(in_array($datum['nome'], $cssList)) {
+                } elseif (in_array($datum['nome'], $cssList)) {
                     foreach ($datum['arquivos'] as $file) {
                         if ($file['type'] === "text/css")
-                            $minifier->add(file_get_contents(PATH_HOME . "assetsPublic/{$datum['nome']}/{$datum['nome']}.min.css"));
+                            $minifier->add($file['content']);
                     }
                 }
             }
