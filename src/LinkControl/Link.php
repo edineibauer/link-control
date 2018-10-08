@@ -71,7 +71,7 @@ class Link
     private function createMinFilesVendor()
     {
         if (!file_exists(PATH_HOME . "assetsPublic/core.min.js") || !file_exists(PATH_HOME . "assetsPublic/core.min.css"))
-            new UpdateDashboard(1);
+            new UpdateDashboard(['assets']);
     }
 
     /**
