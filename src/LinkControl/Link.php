@@ -9,6 +9,7 @@
 namespace LinkControl;
 
 use ConnCrud\Read;
+use Dashboard\UpdateDashboard;
 use EntityForm\Dicionario;
 use Helpers\Helper;
 use MatthiasMullie\Minify;
@@ -18,7 +19,6 @@ class Link
     private $url;
     private $param;
     private $dicionario;
-    private $devLibrary;
 
     /**
      * Link constructor.
@@ -28,8 +28,6 @@ class Link
      */
     function __construct(string $lib, string $file, $var = null)
     {
-        $this->devLibrary = "http://uebster.com/";
-
         $this->param = $this->getBaseParam($lib, $file);
         if (empty($this->param['title']))
             $this->param['title'] = $this->getTitle($file, $var);
@@ -72,26 +70,8 @@ class Link
 
     private function createMinFilesVendor()
     {
-        $f = [];
-        if (file_exists(PATH_HOME . "_config/param.json"))
-            $f = json_decode(file_get_contents(PATH_HOME . "_config/param.json"), true);
-
-        if (!file_exists(PATH_HOME . "assetsPublic/core.min.js") || !file_exists(PATH_HOME . "assetsPublic/core.min.css")) {
-            $list = implode('/', array_merge($f['js'], $f['css']));
-            $data = json_decode(file_get_contents("{$this->devLibrary}app/library/{$list}"), true);
-            if ($data['response'] === 1 && !empty($data['data'])) {
-
-                //update version system
-                $conf = file_get_contents(PATH_HOME . "_config/config.php");
-                $ffile = fopen(PATH_HOME . "_config/config.php", "w");
-                fwrite($ffile, str_replace("'VERSION', '" . VERSION . "')", "'VERSION', '" . (VERSION + 0.01) . "')", $conf));
-                fclose($ffile);
-
-                $this->createCoreJs($f['js'], $data['data'], 'core');
-                $this->createCoreCss($f['css'], $data['data'], 'core');
-            }
-        }
-        $this->createCoreFont($f['font'], $f['icon'], 'fonts');
+        if (!file_exists(PATH_HOME . "assetsPublic/core.min.js") || !file_exists(PATH_HOME . "assetsPublic/core.min.css"))
+            new UpdateDashboard(1);
     }
 
     /**
@@ -161,90 +141,6 @@ class Link
     }
 
     /**
-     * @param array $jsList
-     * @param array $data
-     * @param string $name
-     */
-    private function createCoreJs(array $jsList, array $data, string $name = "core")
-    {
-        if (!file_exists(PATH_HOME . "assetsPublic/{$name}.min.js")) {
-            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic");
-            $minifier = new Minify\JS("");
-
-            foreach ($data as $datum) {
-                if (in_array($datum['nome'], $jsList)) {
-                    foreach ($datum['arquivos'] as $file) {
-                        if ($file['type'] === "text/javascript")
-                            $minifier->add($file['content']);
-                    }
-                }
-            }
-
-            $minifier->minify(PATH_HOME . "assetsPublic/{$name}.min.js");
-        }
-    }
-
-    /**
-     * @param array $cssList
-     * @param array $data
-     * @param string $name
-     */
-    private function createCoreCss(array $cssList, array $data, string $name = "core")
-    {
-        if (!file_exists(PATH_HOME . "assetsPublic/{$name}.min.css")) {
-            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic");
-            $minifier = new Minify\CSS("");
-
-            foreach ($data as $datum) {
-                if ($datum['nome'] === "theme") {
-                    foreach ($datum['arquivos'] as $file) {
-                        if ($file['type'] === "text/css") {
-                            if (!file_exists(PATH_HOME . "assetsPublic/theme.min.css")) {
-                                $mini = new Minify\CSS($file['content']);
-                                $mini->minify(PATH_HOME . "assetsPublic/theme.min.css");
-                                $minifier->add($file['content']);
-                            } else {
-                                $minifier->add(file_get_contents(PATH_HOME . "assetsPublic/theme.min.css"));
-                            }
-                        }
-                    }
-                } elseif (in_array($datum['nome'], $cssList)) {
-                    foreach ($datum['arquivos'] as $file) {
-                        if ($file['type'] === "text/css")
-                            $minifier->add($file['content']);
-                    }
-                }
-            }
-
-            $minifier->minify(PATH_HOME . "assetsPublic/{$name}.min.css");
-        }
-    }
-
-    /**
-     * @param $fontList
-     * @param null $iconList
-     * @param string $name
-     */
-    private function createCoreFont($fontList, $iconList = null, string $name = 'fonts')
-    {
-        if (!file_exists(PATH_HOME . "assetsPublic/{$name}.min.css")) {
-            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic");
-            $fonts = "";
-            if ($fontList) {
-                foreach ($fontList as $item)
-                    $fonts .= $this->getFontIcon($item, "font");
-            }
-            if ($iconList) {
-                foreach ($iconList as $item)
-                    $fonts .= $this->getFontIcon($item, "icon");
-            }
-
-            $m = new Minify\CSS($fonts);
-            $m->minify(PATH_HOME . "assetsPublic/{$name}.min.css");
-        }
-    }
-
-    /**
      * Prepara o formato do título caso tenha variáveis
      *
      * @param string $title
@@ -270,40 +166,5 @@ class Link
             }
         }
         return $title;
-    }
-
-    /**
-     * @param string $item
-     * @param string $tipo
-     * @return string
-     */
-    private function getFontIcon(string $item, string $tipo): string
-    {
-        $data = "";
-        $urlOnline = $tipo === "font" ? "https://fonts.googleapis.com/css?family=" . ucfirst($item) . ":100,300,400,700" : "https://fonts.googleapis.com/icon?family=" . ucfirst($item) . "+Icons";
-        if (Helper::isOnline($urlOnline)) {
-            $data = file_get_contents($urlOnline);
-            foreach (explode('url(', $data) as $i => $u) {
-                if ($i > 0) {
-                    $url = explode(')', $u)[0];
-                    if (!file_exists(PATH_HOME . "assetsPublic/fonts/" . pathinfo($url, PATHINFO_BASENAME))) {
-                        if (Helper::isOnline($url)) {
-                            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/fonts");
-                            $f = fopen(PATH_HOME . "assetsPublic/fonts/" . pathinfo($url, PATHINFO_BASENAME), "w+");
-                            fwrite($f, file_get_contents($url));
-                            fclose($f);
-                            $data = str_replace($url, HOME . "assetsPublic/fonts/" . pathinfo($url, PATHINFO_BASENAME), $data);
-                        } else {
-                            $before = "@font-face" . explode("@font-face", $u[$i - 1])[1] . "url(";
-                            $after = explode("}", $u)[0];
-                            $data = str_replace($before . $after, "", $data);
-                        }
-                    } else {
-                        $data = str_replace($url, HOME . "assetsPublic/fonts/" . pathinfo($url, PATHINFO_BASENAME), $data);
-                    }
-                }
-            }
-        }
-        return $data;
     }
 }
