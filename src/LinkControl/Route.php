@@ -110,9 +110,9 @@ class Route
     {
         $libsPath[] = [DOMINIO => "public/{$dir}"];
         if (!empty($_SESSION['userlogin'])) {
-            $libsPath[][DOMINIO] = "public/{$dir}/{$_SESSION['userlogin']['setor']}";
+            $libsPath[][DOMINIO] = "public/{$dir}/session/{$_SESSION['userlogin']['setor']}";
             $libsPath = array_merge($libsPath, array_map(function ($class) use ($dir) {
-                return [$class => VENDOR . $class . "/{$dir}/{$_SESSION['userlogin']['setor']}"];
+                return [$class => VENDOR . $class . "/{$dir}/session/{$_SESSION['userlogin']['setor']}"];
             }, $this->getRouteFile()));
         }
         $libsPath = array_merge($libsPath, array_map(function ($class) use ($dir) {
