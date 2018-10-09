@@ -28,7 +28,7 @@
     </script>
     <script src='{$home}assetsPublic/core.min.js?v={$version}' defer ></script>
     <style id="app-style"></style>
-    <style id="app-script"></style>
+    <script id="app-script"></script>
 </head>
 <body>
 <div class="col padding-small theme z-depth-2 no-selec header" style="z-index: 19">
