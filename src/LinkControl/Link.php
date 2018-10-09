@@ -85,7 +85,7 @@ class Link
             "version" => VERSION,
             "meta" => "",
             "css" => "",
-            "js" => [],
+            "js" => "",
             "font" => "",
             "descricao" => "",
             "data" => 0,
@@ -97,11 +97,11 @@ class Link
             $base = array_merge($base, json_decode(file_get_contents(PATH_HOME . ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/") . "param/{$file}.json"), true));
 
         if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.js")) {
-            $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
+            $base['js'] .= file_get_contents(HOME . $pathFile . "assets/{$file}.min.js");
         } elseif (file_exists(PATH_HOME . $pathFile . "assets/{$file}.js")) {
             $minifier = new Minify\JS(file_get_contents(PATH_HOME . $pathFile . "assets/{$file}.js"));
             $minifier->minify(PATH_HOME . $pathFile . "assets/{$file}.min.js");
-            $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
+            $base['js'] .= file_get_contents(HOME . $pathFile . "assets/{$file}.min.js");
         }
 
         if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.css")) {
