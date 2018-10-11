@@ -31,7 +31,7 @@
     <script id="app-script"></script>
 </head>
 <body>
-<div class="col theme z-depth-2 no-select header" style="z-index: 19; padding: 4px 8px 2px 8px;">
+<div class="col padding-small theme z-depth-2 no-selec header" style="z-index: 19">
     <div class="col {if !$loged}container-1200{/if}">
         <header class="left padding-tiny header-logo">
             <a href="{$home}" class="left">
@@ -49,7 +49,7 @@
                 {/if}
             </a>
         </header>
-        <nav class="right" style="margin: 6px 5px 0 5px" role="navigation">
+        <nav class="right padding-tiny" role="navigation">
             <ul class="right upper header-nav hide-medium hide-small">
                 {* <li class="left padding-0 padding-right col relative" style="width: 400px">
                      <input type="text" placeholder="buscar.."
