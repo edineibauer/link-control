@@ -28,20 +28,110 @@ class Link
      */
     function __construct(string $lib, string $file, $var = null)
     {
-        $this->param = $this->getBaseParam($lib, $file);
+        $pathFile = ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/");
+        $this->param = $this->getBaseParam($lib, $file, $pathFile);
+
         if (empty($this->param['title']))
             $this->param['title'] = $this->getTitle($file, $var);
         else
             $this->param['title'] = $this->prepareTitle($this->param['title'], $file);
 
-        $this->createMinFilesVendor();
+        /* Se não existir os assets Core, cria eles */
+        if (!file_exists(PATH_HOME . "assetsPublic/core.min.js") || !file_exists(PATH_HOME . "assetsPublic/core.min.css"))
+            new UpdateDashboard(['assets']);
 
+        if (!file_exists(PATH_HOME . "assetsPublic/view/{$file}.min.js") || !file_exists(PATH_HOME . "assetsPublic/view/{$file}.min.css")) {
+            if (!empty($this->param['js']) || !empty($this->param['css'])) {
+                $list = implode('/', array_unique(array_merge($this->param['js'], $this->param['css'])));
+                $data = json_decode(file_get_contents(REPOSITORIO . "app/library/{$list}"), true);
+                $data = $data['response'] === 1 && !empty($data['data']) ? $data['data'] : [];
+            } else {
+                $data = [];
+            }
+
+            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic");
+            Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/view");
+
+            /* Se não existir os assets View, cria eles */
+            if (!file_exists(PATH_HOME . "assetsPublic/view/{$file}.min.js"))
+                $this->createPageJs($file, $data, $pathFile);
+
+            /* Se não existir os assets View, cria eles */
+            if (!file_exists(PATH_HOME . "assetsPublic/view/{$file}.min.css"))
+                $this->createPageCss($file, $data, $pathFile);
+        }
+
+        /* Adiciona o arquivo css da view na variável */
+        $this->param['css'] = file_get_contents(PATH_HOME . "assetsPublic/view/{$file}.min.css");
+        $this->param['js'] = HOME . "assetsPublic/view/{$file}.min.js";
         $this->param["vendor"] = VENDOR;
         $this->param["url"] = $file . (!empty($var) ? "/{$var}" : "");
         $this->param['loged'] = !empty($_SESSION['userlogin']);
         $this->param['login'] = ($this->param['loged'] ? $_SESSION['userlogin'] : "");
         $this->param['email'] = defined("EMAIL") && !empty(EMAIL) ? EMAIL : "contato@" . DOMINIO;
         $this->param['menu'] = "";
+    }
+
+    /**
+     * Cria View Assets JS
+     * @param string $name
+     * @param array $data
+     * @param string $pathFile
+     */
+    private function createPageJs(string $name, array $data, string $pathFile)
+    {
+        $minifier = new Minify\JS("");
+
+        foreach ($data as $datum) {
+            if (in_array($datum['nome'], $this->param['js'])) {
+                foreach ($datum['arquivos'] as $file) {
+                    if ($file['type'] === "text/javascript")
+                        $minifier->add($file['content']);
+                }
+            }
+        }
+
+        if (file_exists(PATH_HOME . $pathFile . "assets/{$name}.min.js"))
+            $minifier->add(file_get_contents(PATH_HOME . $pathFile . "assets/{$name}.min.js"));
+        elseif (file_exists(PATH_HOME . $pathFile . "assets/{$name}.js"))
+            $minifier->add(file_get_contents(PATH_HOME . $pathFile . "assets/{$name}.js"));
+
+        $minifier->minify(PATH_HOME . "assetsPublic/view/{$name}.min.js");
+    }
+
+    /**
+     * Cria View Assets CSS
+     * @param string $name
+     * @param array $data
+     * @param string $pathFile
+     */
+    private function createPageCss(string $name, array $data, string $pathFile)
+    {
+        $minifier = new Minify\CSS("");
+
+        foreach ($this->param['css'] as $item) {
+            $datum = array_values(array_filter(array_map(function ($d) use ($item) {
+                return $d['nome'] === $item ? $d : [];
+            }, $data)));
+
+            if (!empty($datum[0])) {
+                $datum = $datum[0];
+
+                if (!empty($datum['arquivos'])) {
+                    foreach ($datum['arquivos'] as $file) {
+                        if ($file['type'] === "text/css")
+                            $minifier->add($file['content']);
+                    }
+                }
+            }
+        }
+
+        if (file_exists(PATH_HOME . $pathFile . "assets/{$name}.min.css"))
+            $minifier->add(file_get_contents(PATH_HOME . $pathFile . "assets/{$name}.min.css"));
+        elseif (file_exists(PATH_HOME . $pathFile . "assets/{$name}.css"))
+            $minifier->add(file_get_contents(PATH_HOME . $pathFile . "assets/{$name}.css"));
+
+        $minifier->minify(PATH_HOME . "assetsPublic/view/{$name}.min.css");
     }
 
     /**
@@ -68,23 +158,18 @@ class Link
         return $this->param;
     }
 
-    private function createMinFilesVendor()
-    {
-        if (!file_exists(PATH_HOME . "assetsPublic/core.min.js") || !file_exists(PATH_HOME . "assetsPublic/core.min.css"))
-            new UpdateDashboard(['assets']);
-    }
-
     /**
      * @param string $lib
      * @param string $file
+     * @param string $pathFile
      * @return array
      */
-    private function getBaseParam(string $lib, string $file)
+    private function getBaseParam(string $lib, string $file, string $pathFile)
     {
         $base = [
             "version" => VERSION,
             "meta" => "",
-            "css" => "",
+            "css" => [],
             "js" => [],
             "font" => "",
             "descricao" => "",
@@ -92,25 +177,32 @@ class Link
             "analytics" => defined("ANALYTICS") ? ANALYTICS : ""
         ];
 
+        if (file_exists(PATH_HOME . $pathFile . "param/{$file}.json")) {
+            $param = json_decode(file_get_contents(PATH_HOME . $pathFile . "param/{$file}.json"), true);
+            if (!empty($param))
+                $base = array_merge($base, $param);
+        }
+
+        return $base;
+    }
+
+    /**
+     * Obtém os Assets da View
+     * @param string $lib
+     * @param string $file
+     * @return array
+     */
+    private function getViewParam(string $lib, string $file): array
+    {
+        $base = [
+            "css" => [],
+            "js" => [],
+            "font" => ""
+        ];
+
         $pathFile = ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/");
         if (file_exists(PATH_HOME . $pathFile . "param/{$file}.json"))
             $base = array_merge($base, json_decode(file_get_contents(PATH_HOME . ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/") . "param/{$file}.json"), true));
-
-        if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.js")) {
-            $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
-        } elseif (file_exists(PATH_HOME . $pathFile . "assets/{$file}.js")) {
-            $minifier = new Minify\JS(file_get_contents(PATH_HOME . $pathFile . "assets/{$file}.js"));
-            $minifier->minify(PATH_HOME . $pathFile . "assets/{$file}.min.js");
-            $base['js'][] = HOME . $pathFile . "assets/{$file}.min.js";
-        }
-
-        if (file_exists(PATH_HOME . $pathFile . "assets/{$file}.min.css")) {
-            $base['css'] .= file_get_contents(HOME . $pathFile . "assets/{$file}.min.css");
-        } elseif (file_exists(PATH_HOME . $pathFile . "assets/{$file}.css")) {
-            $minifier = new Minify\CSS(file_get_contents(PATH_HOME . $pathFile . "assets/{$file}.css"));
-            $minifier->minify(PATH_HOME . $pathFile . "assets/{$file}.min.css");
-            $base['css'] .= file_get_contents(HOME . $pathFile . "assets/{$file}.min.css");
-        }
 
         return $base;
     }
