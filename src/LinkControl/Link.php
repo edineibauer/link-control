@@ -59,6 +59,10 @@ class Link
             /* Se não existir os assets View, cria eles */
             if (!file_exists(PATH_HOME . "assetsPublic/view/{$file}.min.css"))
                 $this->createPageCss($file, $data, $pathFile);
+
+            /* Se não existir os assets de Imagem, cria eles*/
+            if (!file_exists(PATH_HOME . "assetsPublic/img/{$file}"))
+                $this->createImagens($file, $data, $pathFile);
         }
 
         /* Adiciona o arquivo css da view na variável */
@@ -70,6 +74,26 @@ class Link
         $this->param['login'] = ($this->param['loged'] ? $_SESSION['userlogin'] : "");
         $this->param['email'] = defined("EMAIL") && !empty(EMAIL) ? EMAIL : "contato@" . DOMINIO;
         $this->param['menu'] = "";
+    }
+
+    /**
+     * Cria as imagens
+     * @param string $file
+     * @param array $data
+     * @param string $pathFile
+     */
+    private function createImagens(string $file, array $data, string $pathFile)
+    {
+        Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/img");
+        foreach ($data as $datum) {
+            if (!empty($datum['imagens']) && !file_exists(PATH_HOME . "assetsPublic/img/{$datum['nome']}")) {
+                Helper::createFolderIfNoExist(PATH_HOME . "assetsPublic/img/{$datum['nome']}");
+                foreach ($datum['imagens'] as $file) {
+                    if (!file_exists(PATH_HOME . "assetsPublic/img/{$datum['nome']}/{$file['name']}"))
+                        copy($file['content'], PATH_HOME . "assetsPublic/img/{$datum['nome']}/{$file['name']}");
+                }
+            }
+        }
     }
 
     /**
@@ -132,6 +156,14 @@ class Link
             $minifier->add(file_get_contents(PATH_HOME . $pathFile . "assets/{$name}.css"));
 
         $minifier->minify(PATH_HOME . "assetsPublic/view/{$name}.min.css");
+
+        //Ajusta diretório dos assets
+        $file = file_get_contents(PATH_HOME . "assetsPublic/view/{$name}.min.css");
+        $file = str_replace("../", "", $file);
+        $f = fopen(PATH_HOME . "assetsPublic/view/{$name}.min.css", "w");
+        fwrite($f, $file);
+        fclose($f);
+
     }
 
     /**
