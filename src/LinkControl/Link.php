@@ -24,17 +24,19 @@ class Link
      * Link constructor.
      * @param string $lib
      * @param string $file
-     * @param $var
+     * @param array $var
      */
-    function __construct(string $lib, string $file, $var = null)
+    function __construct(string $lib, string $file, array $var = [])
     {
         $pathFile = ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/");
         $this->param = $this->getBaseParam($lib, $file, $pathFile);
 
+        $dados = $this->readData($file, $var);
+
         if (empty($this->param['title']))
-            $this->param['title'] = $this->getTitle($file, $var);
+            $this->param['title'] = $this->getTitle($file, $var, $dados);
         else
-            $this->param['title'] = $this->prepareTitle($this->param['title'], $file);
+            $this->param['title'] = $this->prepareTitle($this->param['title'], $file, $dados);
 
         /* Se não existir os assets Core, cria eles */
         if (!file_exists(PATH_HOME . "assetsPublic/core.min.js") || !file_exists(PATH_HOME . "assetsPublic/core.min.css"))
@@ -69,11 +71,41 @@ class Link
         $this->param['css'] = file_get_contents(PATH_HOME . "assetsPublic/view/{$file}.min.css");
         $this->param['js'] = HOME . "assetsPublic/view/{$file}.min.js";
         $this->param["vendor"] = VENDOR;
-        $this->param["url"] = $file . (!empty($var) ? "/{$var}" : "");
+        $this->param["url"] = $file . (!empty($var) ? "/" . implode('/', $var) : "");
         $this->param['loged'] = !empty($_SESSION['userlogin']);
         $this->param['login'] = ($this->param['loged'] ? $_SESSION['userlogin'] : "");
         $this->param['email'] = defined("EMAIL") && !empty(EMAIL) ? EMAIL : "contato@" . DOMINIO;
         $this->param['menu'] = "";
+    }
+
+    /**
+     * @param string $file
+     * @param array $var
+     * @return array
+     */
+    private function readData(string $file, array $var): array
+    {
+        if(count($var) === 1) {
+            if (file_exists(PATH_HOME . "entity/cache/{$file}.json")){
+                $dic = new Dicionario($file);
+
+                if ($name = $dic->search($dic->getInfo()['link'])) {
+                    $name = $name->getColumn();
+
+                    $read = new Read();
+                    $read->exeRead($file, "WHERE id = :nn || {$name} = :nn", "nn={$var[0]}");
+                    if ($read->getResult()) {
+                        $dados = $read->getResult()[0];
+                        if(!isset($dados['title']))
+                            $dados["title"] = $dados[$dic->search($dic->getInfo()['title'])->getColumn()];
+
+                        return $dados;
+                    }
+                }
+            }
+        }
+
+        return [];
     }
 
     /**
@@ -241,46 +273,40 @@ class Link
 
     /**
      * @param string $file
-     * @param null $var
+     * @param array $var
+     * @param array $data
      * @return string
      */
-    private function getTitle(string $file, $var = null): string
+    private function getTitle(string $file, array $var, array $data): string
     {
-        $entity = str_replace("-", "_", $file);
-        if (file_exists(PATH_HOME . "entity/cache/{$entity}.json") && $var) {
-            $this->dicionario = new Dicionario($entity);
-            $where = "WHERE id = {$var}";
-            if ($linkId = $this->dicionario->getInfo()['link']) {
-                $where .= " || " . $this->dicionario->search($linkId)->getColumn() . " = '{$var}'";
+        if(empty($data['title']))
+            return ucwords(str_replace(["-", "_"], " ", $file)) . (!empty($var) ? " | " . SITENAME : "");
 
-                $read = new Read();
-                $read->exeRead($entity, $where);
-                if ($read->getResult()) {
-                    return $read->getResult()[0][$this->dicionario->search($this->dicionario->getInfo()['title'])->getColumn()] . " | " . SITENAME;
-                }
-            }
-        }
-
-        return ($file === "index" ? SITENAME . (defined('SITESUB') && !empty(SITESUB) ? " | " . SITESUB : "") : ucwords(str_replace(['-', "_"], " ", $file)) . " | " . SITENAME);
+        return $data['title'];
     }
 
     /**
      * Prepara o formato do título caso tenha variáveis
      *
      * @param string $title
+     * @param string $file
+     * @param array $data
      * @return string
      */
-    private function prepareTitle(string $title, string $file): string
+    private function prepareTitle(string $title, string $file, array $data): string
     {
+        $titulo = ucwords(str_replace(["-", "_"], " ", $file));
+
         if (preg_match('/{{/i', $title)) {
-            $data = [
+
+            $data = array_merge($data, [
+                "title" => $data['title'] ?? $titulo,
+                "titulo" => $data['title'] ?? $titulo,
                 "sitename" => SITENAME,
                 "SITENAME" => SITENAME,
                 "sitesub" => SITESUB,
                 "SITESUB" => SITESUB,
-                "title" => !empty($this->dicionario) ? $this->dicionario->getRelevant()->getValue() : ucwords(str_replace(['-', "_"], " ", $file)),
-                "file" => ucwords(str_replace(['-', "_"], " ", $file))
-            ];
+            ]);
 
             foreach (explode('{{', $title) as $i => $item) {
                 if ($i > 0) {
