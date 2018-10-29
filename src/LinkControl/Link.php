@@ -29,14 +29,14 @@ class Link
     function __construct(string $lib, string $file, array $var = [])
     {
         $pathFile = ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/");
-        $this->param = $this->getBaseParam($lib, $file, $pathFile);
+        $this->param = $this->getBaseParam($file, $pathFile);
 
-        $dados = $this->readData($file, $var);
+        $this->param['data'] = $this->readData($file, $var);
 
         if (empty($this->param['title']))
-            $this->param['title'] = $this->getTitle($file, $var, $dados);
+            $this->param['title'] = $this->getTitle($file, $var);
         else
-            $this->param['title'] = $this->prepareTitle($this->param['title'], $file, $dados);
+            $this->param['title'] = $this->prepareTitle($this->param['title'], $file);
 
         /* Se não existir os assets Core, cria eles */
         if (!file_exists(PATH_HOME . "assetsPublic/core.min.js") || !file_exists(PATH_HOME . "assetsPublic/core.min.css"))
@@ -223,12 +223,11 @@ class Link
     }
 
     /**
-     * @param string $lib
      * @param string $file
      * @param string $pathFile
      * @return array
      */
-    private function getBaseParam(string $lib, string $file, string $pathFile)
+    private function getBaseParam(string $file, string $pathFile)
     {
         $base = [
             "version" => VERSION,
@@ -251,38 +250,16 @@ class Link
     }
 
     /**
-     * Obtém os Assets da View
-     * @param string $lib
-     * @param string $file
-     * @return array
-     */
-    private function getViewParam(string $lib, string $file): array
-    {
-        $base = [
-            "css" => [],
-            "js" => [],
-            "font" => ""
-        ];
-
-        $pathFile = ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/");
-        if (file_exists(PATH_HOME . $pathFile . "param/{$file}.json"))
-            $base = array_merge($base, json_decode(file_get_contents(PATH_HOME . ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/") . "param/{$file}.json"), true));
-
-        return $base;
-    }
-
-    /**
      * @param string $file
      * @param array $var
-     * @param array $data
      * @return string
      */
-    private function getTitle(string $file, array $var, array $data): string
+    private function getTitle(string $file, array $var): string
     {
-        if(empty($data['title']))
+        if(empty($this->param['data']['title']))
             return ucwords(str_replace(["-", "_"], " ", $file)) . (!empty($var) ? " | " . SITENAME : "");
 
-        return $data['title'];
+        return $this->param['data']['title'];
     }
 
     /**
@@ -290,18 +267,17 @@ class Link
      *
      * @param string $title
      * @param string $file
-     * @param array $data
      * @return string
      */
-    private function prepareTitle(string $title, string $file, array $data): string
+    private function prepareTitle(string $title, string $file): string
     {
         $titulo = ucwords(str_replace(["-", "_"], " ", $file));
 
         if (preg_match('/{{/i', $title)) {
 
-            $data = array_merge($data, [
-                "title" => $data['title'] ?? $titulo,
-                "titulo" => $data['title'] ?? $titulo,
+            $data = array_merge($this->param['data'], [
+                "title" => $this->param['data']['title'] ?? $titulo,
+                "titulo" => $this->param['data']['title'] ?? $titulo,
                 "sitename" => SITENAME,
                 "SITENAME" => SITENAME,
                 "sitesub" => SITESUB,
