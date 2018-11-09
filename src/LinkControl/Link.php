@@ -182,10 +182,10 @@ class Link
             }
         }
 
-        if (file_exists(PATH_HOME . $pathFile . "assets/{$name}.min.css"))
-            $minifier->add(file_get_contents(PATH_HOME . $pathFile . "assets/{$name}.min.css"));
-        elseif (file_exists(PATH_HOME . $pathFile . "assets/{$name}.css"))
+        if (file_exists(PATH_HOME . $pathFile . "assets/{$name}.css"))
             $minifier->add(file_get_contents(PATH_HOME . $pathFile . "assets/{$name}.css"));
+        elseif (file_exists(PATH_HOME . $pathFile . "assets/{$name}.min.css"))
+            $minifier->add(file_get_contents(PATH_HOME . $pathFile . "assets/{$name}.min.css"));
 
         $minifier->minify(PATH_HOME . "assetsPublic/view/{$name}.min.css");
 
