@@ -28,7 +28,7 @@ class Link
      */
     function __construct(string $lib, string $file, array $var = [])
     {
-        $pathFile = ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/");
+        $pathFile = ($lib === DOMINIO ? "public/" : VENDOR . "{$lib}/public/");
         $this->param = $this->getBaseParam($file, $pathFile);
 
         $this->param['data'] = $this->readData($file, $var);

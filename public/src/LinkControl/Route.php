@@ -132,11 +132,11 @@ class Route
         if (!empty($_SESSION['userlogin'])) {
             $libsPath[][DOMINIO] = "public/{$this->directory}/{$_SESSION['userlogin']['setor']}";
             $libsPath = array_merge($libsPath, array_map(function ($class) {
-                return [$class => VENDOR . $class . "/{$this->directory}/{$_SESSION['userlogin']['setor']}"];
+                return [$class => VENDOR . $class . "/public/{$this->directory}/{$_SESSION['userlogin']['setor']}"];
             }, $this->getRouteFile()));
         }
         $libsPath = array_merge($libsPath, array_map(function ($class) {
-            return [$class => VENDOR . $class . "/{$this->directory}"];
+            return [$class => VENDOR . $class . "/public/{$this->directory}"];
         }, $this->getRouteFile()));
 
         return $libsPath;
