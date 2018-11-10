@@ -273,24 +273,32 @@ class Link
     {
         $titulo = ucwords(str_replace(["-", "_"], " ", $file));
 
+        $data = array_merge($this->param['data'], [
+            "title" => $this->param['data']['title'] ?? $titulo,
+            "titulo" => $this->param['data']['title'] ?? $titulo,
+            "sitename" => SITENAME,
+            "SITENAME" => SITENAME,
+            "sitesub" => SITESUB,
+            "SITESUB" => SITESUB,
+        ]);
+
         if (preg_match('/{{/i', $title)) {
-
-            $data = array_merge($this->param['data'], [
-                "title" => $this->param['data']['title'] ?? $titulo,
-                "titulo" => $this->param['data']['title'] ?? $titulo,
-                "sitename" => SITENAME,
-                "SITENAME" => SITENAME,
-                "sitesub" => SITESUB,
-                "SITESUB" => SITESUB,
-            ]);
-
             foreach (explode('{{', $title) as $i => $item) {
                 if ($i > 0) {
                     $variavel = explode('}}', $item)[0];
                     $title = str_replace('{{' . $variavel . '}}', (!empty($data[$variavel]) ? $data[$variavel] : ""), $title);
                 }
             }
+
+        } elseif (preg_match('/{\$/i', $title)) {
+            foreach (explode('{$', $title) as $i => $item) {
+                if ($i > 0) {
+                    $variavel = explode('}', $item)[0];
+                    $title = str_replace('{$' . $variavel . '}', (!empty($data[$variavel]) ? $data[$variavel] : ""), $title);
+                }
+            }
         }
+
         return $title;
     }
 }
