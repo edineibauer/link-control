@@ -10,7 +10,7 @@ namespace LinkControl;
 
 use ConnCrud\Read;
 use Dashboard\UpdateDashboard;
-use EntityForm\Dicionario;
+use Entity\Dicionario;
 use Helpers\Helper;
 use MatthiasMullie\Minify;
 
