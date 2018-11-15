@@ -8,9 +8,10 @@ class Sessao
 {
     public function __construct()
     {
-        session_start();
+        if (session_status() == PHP_SESSION_NONE)
+            session_start();
 
-        if (class_exists('\SessionControl\Login')){
+        if (class_exists('\SessionControl\Login')) {
             //Cookie Operations
             if (isset($_COOKIE['token']) && empty($_SESSION['userlogin']))
                 $this->cookieLogin();
