@@ -44,7 +44,7 @@ class Link
 
         if (!file_exists(PATH_HOME . "assetsPublic/view/{$file}.min.js") || !file_exists(PATH_HOME . "assetsPublic/view/{$file}.min.css")) {
             if (!empty($this->param['js']) || !empty($this->param['css'])) {
-                $list = implode('/', array_unique(array_merge($this->param['js'], $this->param['css'])));
+                $list = implode('/', array_unique(array_merge((is_array($this->param['js']) ? $this->param['js'] : []), (is_array($this->param['css']) ? $this->param['css'] : []))));
                 $data = json_decode(file_get_contents(REPOSITORIO . "app/library/{$list}"), true);
                 $data = $data['response'] === 1 && !empty($data['data']) ? $data['data'] : [];
             } else {
@@ -85,8 +85,8 @@ class Link
      */
     private function readData(string $file, array $var): array
     {
-        if(count($var) === 1) {
-            if (file_exists(PATH_HOME . "entity/cache/{$file}.json")){
+        if (count($var) === 1) {
+            if (file_exists(PATH_HOME . "entity/cache/{$file}.json")) {
                 $dic = new Dicionario($file);
 
                 if ($name = $dic->search($dic->getInfo()['link'])) {
@@ -96,7 +96,7 @@ class Link
                     $read->exeRead($file, "WHERE id = :nn || {$name} = :nn", "nn={$var[0]}");
                     if ($read->getResult()) {
                         $dados = $read->getResult()[0];
-                        if(!isset($dados['title']))
+                        if (!isset($dados['title']))
                             $dados["title"] = $dados[$dic->search($dic->getInfo()['title'])->getColumn()];
 
                         return $dados;
@@ -165,18 +165,20 @@ class Link
     {
         $minifier = new Minify\CSS("");
 
-        foreach ($this->param['css'] as $item) {
-            $datum = array_values(array_filter(array_map(function ($d) use ($item) {
-                return $d['nome'] === $item ? $d : [];
-            }, $data)));
+        if (!empty($this->param['css']) && is_array($this->param['css'])) {
+            foreach ($this->param['css'] as $item) {
+                $datum = array_values(array_filter(array_map(function ($d) use ($item) {
+                    return $d['nome'] === $item ? $d : [];
+                }, $data)));
 
-            if (!empty($datum[0])) {
-                $datum = $datum[0];
+                if (!empty($datum[0])) {
+                    $datum = $datum[0];
 
-                if (!empty($datum['arquivos'])) {
-                    foreach ($datum['arquivos'] as $file) {
-                        if ($file['type'] === "text/css")
-                            $minifier->add($file['content']);
+                    if (!empty($datum['arquivos'])) {
+                        foreach ($datum['arquivos'] as $file) {
+                            if ($file['type'] === "text/css")
+                                $minifier->add($file['content']);
+                        }
                     }
                 }
             }
@@ -256,7 +258,7 @@ class Link
      */
     private function getTitle(string $file, array $var): string
     {
-        if(empty($this->param['data']['title']))
+        if (empty($this->param['data']['title']))
             return ucwords(str_replace(["-", "_"], " ", $file)) . (!empty($var) ? " | " . SITENAME : "");
 
         return $this->param['data']['title'];
