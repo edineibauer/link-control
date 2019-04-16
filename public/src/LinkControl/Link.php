@@ -46,7 +46,7 @@ class Link
             if (!empty($this->param['js']) || !empty($this->param['css'])) {
                 $list = implode('/', array_unique(array_merge((is_array($this->param['js']) ? $this->param['js'] : []), (is_array($this->param['css']) ? $this->param['css'] : []))));
                 $data = json_decode(file_get_contents(REPOSITORIO . "app/library/{$list}"), true);
-                $data = $data['response'] === 1 && !empty($data['data']) ? $data['data'] : [];
+                $data = !empty($data) ? $data : [];
             } else {
                 $data = [];
             }
